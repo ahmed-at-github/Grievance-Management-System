@@ -1,5 +1,5 @@
 import { userService } from '../services/user.service.js';
-import { Constants } from '../config/constants.js';
+import { Constants } from '../../config/constants.js';
 
 export const getAllUsers = async (_req, res, next) => {
     try {

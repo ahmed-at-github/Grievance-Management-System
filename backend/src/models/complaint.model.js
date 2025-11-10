@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 
-//for student, dean, chairman 
 const userSchema = new mongoose.Schema(
     {
         name: { type: String, required: true },

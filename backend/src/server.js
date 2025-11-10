@@ -6,11 +6,11 @@ import { connectDatabase } from './config/database.js';
 
 dotenv.config();
 
-await connectDatabase();
+// await connectDatabase();
 
 const server = app.listen(environment.port, () => {
     logger.info(
-        `🚀 Server running at http://${environment.host}:${environment.port}`,
+        `Server running at http://${environment.host}:${environment.port}`,
     );
 });
 
