@@ -1,5 +1,5 @@
 import express from 'express';
-import userRouter from './user.routes.js';
+// import userRouter from './user.routes.js';
 import authRouter from '../auth/auth.routes.js';
 import adminRouter from '../admin/admin.routes.js';
 
@@ -12,7 +12,7 @@ router.get('/health', (_req, res) =>
     }),
 );
 
-router.use('/users', userRouter);
+
 router.use('/', authRouter);
 router.use('/admin', adminRouter);
 
