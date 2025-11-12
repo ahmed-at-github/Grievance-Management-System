@@ -5,10 +5,19 @@ const router = Router();
 
 router.get('/create-account', authController.register); //by admin 
 // router.post('/create-account', verifyJwtToken, verify-Adminrole-middleware, authController.register); 
+//handlepassword auto-generate and send to email
 
 router.get('/login', authController.handleLogin);
 // router.get('/refresh', verifyJwtRefreshToken, userController.getAllUsers);
 // router.get('/me', verifyJwtToken, authController.handleLogin); get users info, stud/vc/admin
+
+/*
+verifyJwtToken, 
+verify-Adminrole-middleware
+bcrypt
+jsonwebtoken
+date-fns
+*/
 
 // router.get('/logout', userController.getUserById);
 
