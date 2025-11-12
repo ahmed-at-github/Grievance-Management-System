@@ -6,7 +6,7 @@ import { connectDatabase } from './config/database.js';
 
 dotenv.config();
 
-// await connectDatabase();
+await connectDatabase();
 
 const server = app.listen(environment.port, () => {
     logger.info(

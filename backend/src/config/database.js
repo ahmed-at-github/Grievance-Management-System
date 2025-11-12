@@ -3,9 +3,9 @@ import logger from '../utils/logger.js';
 import environment from '../config/environment.js';
 
 export const connectDatabase = async () => {
-    try {
+    try {        
         await mongoose.connect(environment.mongoUri, {
-            dbName: 'express_app',
+            dbName: 'complaint_mangement',
         });
         logger.info('MongoDB connected successfully');
     } catch (err) {

@@ -1,6 +1,6 @@
-import { User } from '../../models/user.model.js';
+import  User  from '../../models/user.model.js';
 
-export const userService = {
+export const authService = {
     fetchUsers: async () => {
         return await User.find().sort({ createdAt: -1 });
     },
