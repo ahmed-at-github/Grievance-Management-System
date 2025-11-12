@@ -1,0 +1,2 @@
+// hash password
+// compare password

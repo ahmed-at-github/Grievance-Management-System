@@ -10,6 +10,7 @@ router.get('/create-account', authController.register); //by admin
 router.get('/login', authController.handleLogin);
 // router.get('/refresh', verifyJwtRefreshToken, userController.getAllUsers);
 // router.get('/me', verifyJwtToken, authController.handleLogin); get users info, stud/vc/admin
+// router.get('/logout', userController.getUserById);
 
 /*
 verifyJwtToken, 
@@ -19,6 +20,6 @@ jsonwebtoken
 date-fns
 */
 
-// router.get('/logout', userController.getUserById);
+
 
 export default router;
