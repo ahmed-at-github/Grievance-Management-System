@@ -11,6 +11,18 @@ const AdminCreateAccount = () => {
     role: "",
   });
 
+//   {
+//   "name": "John Doe",
+//   "email": "johndoe@example.com",
+//   "password": "",
+//   "role": "student",
+
+//   "studId": "2023-00123",
+//   "session": "2022-2023",
+//   "dept": "Computer Science",
+//   "section": "A"
+// }
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
