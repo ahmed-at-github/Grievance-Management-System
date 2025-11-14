@@ -1,18 +1,31 @@
-import { Router } from "express";
-import * as adminController from "./admin.controller.js"
+import { Router } from 'express';
+import * as adminController from './admin.controller.js';
+import { verifyAccessToken } from '../../middlewares/verifyJwtToken.js';
+import { authorizeRole } from '../../middlewares/verifyUserRole.js';
 
 const router = Router();
 
+router.get(
+    '/users',
+    verifyAccessToken,
+    authorizeRole(['admin']),
+    adminController.getAllUsers,
+);
 
-router.get('/users', adminController.getAllUsers); 
-router.patch("/user/:userId", adminController.editUser)
-// fetch(`localhost:8000/users`)
+router.get(
+    '/user/:studId',
+    verifyAccessToken,
+    authorizeRole(['admin']),
+    adminController.getUserbyId,
+);
 
-// router.get('/user/{id}', authController.getUser); 
+router.delete(
+    '/user/:userId',
+    verifyAccessToken,
+    authorizeRole(['admin']),
+    adminController.deleteUserbyId,
+);
 
-// router.patch('/user/{id}', verifyJwtToken, verify-Adminrole-middleware, authController.register); 
+// router.patch('/user/{id}', verifyJwtToken, verify-Adminrole-middleware, authController.register);
 
-// router.delete('/user/{id}', verifyJwtToken, verify-Adminrole-middleware, authController.register); 
-
-export default router; 
- 
+export default router;

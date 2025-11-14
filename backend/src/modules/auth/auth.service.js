@@ -5,12 +5,18 @@ import { comparePassword, hashPassword } from '../../utils/bcrypt.js';
 import jwt from 'jsonwebtoken';
 
 export const authService = {
-    fetchUsers: async () => {
-        return await User.find().sort({ createdAt: -1 });
-    },
+    getUserById: async (id) => {
+        console.log(id);
 
-    fetchUserById: async (id) => {
-        return await User.findById(id);
+        const user = await User.findById(id);
+
+        if (!user) {
+            const err = new Error('User not found');
+            err.statusCode = 404;
+            throw err;
+        }
+
+        return user.toJSON();
     },
 
     createUser: async (body) => {
@@ -83,8 +89,4 @@ export const authService = {
 
         return { accessToken, refreshToken };
     },
-
-    // deleteUser: async (id) => {
-    //     return await User.findByIdAndDelete(id);
-    // },
 };

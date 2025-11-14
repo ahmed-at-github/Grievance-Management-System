@@ -1,10 +1,42 @@
 import User from '../../models/user.model.js';
 
 export const adminService = {
-    fetchAllUsers: async () => {
+    getAllUsers: async () => {
         // dont return admin user
-        return await User.find();
+        const users = await User.find({ role: { $ne: 'admin' } });
+        return users.map((user) => user.toJSON());
     },
 
-    // updateUser: 
+    getUserById: async (id) => {
+        const user = await User.findOne({
+            _id: id,
+            role: { $ne: 'admin' },
+        });
+
+        if (!user) {
+            const err = new Error('User not found');
+            err.statusCode = 404;
+            throw err;
+        }
+
+        return user.toJSON(); 
+    },
+
+     deleteUserById: async (id) => {
+        const user = await User.findOne({
+            _id: id,
+            role: { $ne: 'admin' },
+        });
+
+        if (!user) {
+            const err = new Error('User not found');
+            err.statusCode = 404;
+            throw err;
+        }
+
+        await user.deleteOne();
+
+        return {message: "User Deletion Successfull"}; 
+    },
+    // updateUser:
 };
