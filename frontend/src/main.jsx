@@ -10,11 +10,21 @@ import AdminCreateAccount from "./components/admin/AdminCreateAccount.jsx";
 import AdminShowAllAccount from "./components/admin/AdminShowAllAccount.jsx";
 import AdminEditAccount from "./components/admin/AdminEditAccount.jsx";
 import Login from "./pages/Login.jsx";
+import UsersInfo from "./pages/UserInfo.jsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
     Component: Login,
+  },
+  {
+    path: "/users/:id",
+    Component: UsersInfo,
+  },
+  
+  {
+    path: "/admin",
+    Component: Admin,
     children: [
       { index: true, Component: AdminHome },
       { path: "admin-create-account", Component: AdminCreateAccount },

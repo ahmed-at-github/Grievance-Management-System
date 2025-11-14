@@ -49,8 +49,8 @@ export const handleLogin = async (req, res, next) => {
         res.status(Constants.HTTP_STATUS.OK)
             .cookie('refreshToken', refreshToken, {
                 httpOnly: true,
-                sameSite: 'None',
-                secure: true,
+                sameSite: 'Lax',
+                secure: false,
                 maxAge: 24 * 60 * 60 * 1000,
             })
             .json({ accessToken: accessToken });
@@ -71,7 +71,7 @@ export const getRefreshToken = async (req, res, next) => {
         res.status(Constants.HTTP_STATUS.OK)
             .cookie('refreshToken', refreshToken, {
                 httpOnly: true,
-                sameSite: 'None',
+                sameSite: 'Lax',
                 secure: true,
                 maxAge: 24 * 60 * 60 * 1000,
             })
@@ -105,8 +105,8 @@ export const handleLogout = async (req, res, next) => {
         return res
             .clearCookie('refreshToken', {
                 httpOnly: true,
-                sameSite: 'None',
-                secure: true,
+                sameSite: 'Lax',
+                secure: false,
             })
             .status(Constants.HTTP_STATUS.OK)
             .json({ message: 'User loggedOut, Refresh token cleared' });

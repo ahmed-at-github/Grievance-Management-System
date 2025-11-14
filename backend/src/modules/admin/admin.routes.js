@@ -13,7 +13,7 @@ router.get(
 );
 
 router.get(
-    '/user/:studId',
+    '/user/:userId',
     verifyAccessToken,
     authorizeRole(['admin']),
     adminController.getUserbyId,

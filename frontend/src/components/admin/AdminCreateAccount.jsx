@@ -1,27 +1,17 @@
 import React, { useState } from "react";
+import { fetchWithRefresh } from "../../utils/fetchUtil";
 
 const AdminCreateAccount = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    studentId: "",
+    studId: "",
+    password: "",
     section: "",
-    department: "",
+    dept: "",
     session: "",
     role: "",
   });
-
-//   {
-//   "name": "John Doe",
-//   "email": "johndoe@example.com",
-//   "password": "",
-//   "role": "student",
-
-//   "studId": "2023-00123",
-//   "session": "2022-2023",
-//   "dept": "Computer Science",
-//   "section": "A"
-// }
 
   const handleChange = (e) => {
     setFormData({
@@ -33,23 +23,29 @@ const AdminCreateAccount = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log(formData);
+
     try {
-      const res = await fetch("", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const res = await fetchWithRefresh(
+        "http://localhost:4000/api/v1/create-account",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       if (res.ok) {
         alert("Account created successfully!");
         setFormData({
           name: "",
           email: "",
-          studentId: "",
+          studId: "",
           section: "",
-          department: "",
+          password: "",
+          dept: "",
           session: "",
           role: "",
         });
@@ -99,8 +95,8 @@ const AdminCreateAccount = () => {
           type="text"
           className="input"
           placeholder="Student ID:"
-          name="studentId"
-          value={formData.studentId}
+          name="studId"
+          value={formData.studId}
           onChange={handleChange}
           required
         />
@@ -121,8 +117,8 @@ const AdminCreateAccount = () => {
           type="text"
           className="input"
           placeholder="Department"
-          name="department"
-          value={formData.department}
+          name="dept"
+          value={formData.dept}
           onChange={handleChange}
           required
         />

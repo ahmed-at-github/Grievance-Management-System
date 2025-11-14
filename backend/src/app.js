@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
-import cookieParser from "cookie-parser"
+import cookieParser from 'cookie-parser';
 import {
     morganMiddleware,
     notFoundHandler,
@@ -19,12 +19,19 @@ app.use(morganMiddleware);
 // Security
 app.use(helmet());
 app.use(compression());
-app.use(
-    rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true }),
-);
+// app.use(
+//     rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true }),
+// );
 
 // CORS
-app.use(cors({ origin: process.env.CLIENT_URL || '*', credentials: true }));
+app.use(
+    cors({
+        origin:"http://localhost:5173", // your frontend
+        credentials: true, // allow cookies
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+    }),
+);
 
 // Body Parsing
 app.use(express.json({ limit: '10mb' }));

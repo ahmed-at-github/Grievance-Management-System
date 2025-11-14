@@ -1,38 +1,63 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Clear previous message
     setMessage("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      //  Login request
+      const loginRes = await fetch("http://localhost:4000/api/v1/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // send cookies if backend sets httpOnly cookie
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      const loginData = await loginRes.json();
 
-      if (!res.ok) {
-        setMessage(data.message || "Login failed");
+      if (!loginRes.ok) {
+        setMessage(loginData.message || "Login failed");
         return;
       }
 
-      // Save token if needed
-      localStorage.setItem("accessToken", data.accessToken);
+      // Save token (if backend returns it)
+      const token = loginData.accessToken;
+      localStorage.setItem("accessToken", token);
 
-      setMessage("Login successful!");
-    } catch (error) {
-      console.error(error);
+      // Call /me endpoint with token
+      const meRes = await fetch("http://localhost:4000/api/v1/me", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+      });
+
+      const meData = await meRes.json();
+
+      console.log(meData.data);
+
+      if (!meRes.ok) {
+        setMessage(meData.message || "Failed to get user info");
+        return;
+      }
+
+      //Check role
+      if (meData.data.role === "admin") {
+        navigate("/admin"); // redirect admin to admin page
+      } else if (meData.data.role === "student") {
+        navigate("/student");
+      }
+    } catch (err) {
+      console.error(err);
       setMessage("Something went wrong. Try again.");
     }
   };
