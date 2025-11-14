@@ -1,11 +1,13 @@
-// import { userService } from '../services/user.service.js';
-// import { Constants } from '../config/constants.js';
-
-import { UserValidator } from '../../utils/validators/userValidator.js';
+import {
+    loginValidator,
+    UserValidator,
+} from '../../utils/validators/userValidator.js';
 import { authService } from './auth.service.js';
+import { Constants } from '../../config/constants.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import User from '../../models/user.model.js';
 
-// create accnt for vc, dean, student
-// handle password and auto send email password using nodemailer
 export const register = async (req, res, next) => {
     try {
         const { error, value } = UserValidator.validate(req.body, {
@@ -20,8 +22,11 @@ export const register = async (req, res, next) => {
         }
 
         const newUser = await authService.createUser(value);
-
-        res.json(newUser);
+        
+        res.status(Constants.HTTP_STATUS.OK).json({
+            success: true,
+            data: newUser,
+        });
     } catch (err) {
         next(err);
     }
@@ -32,17 +37,48 @@ export const register = async (req, res, next) => {
 
 export const handleLogin = async (req, res, next) => {
     try {
-        res.json({ message: 'loggin in!' });
+        const { error, value } = loginValidator.validate(req.body, {
+            abortEarly: false, // return all validation errors
+        });
+
+        if (error) {
+            return res.status(400).json({
+                message: 'Validation failed',
+                errors: error.details.map((d) => d.message),
+            });
+        }
+
+        const { accessToken, refreshToken } =
+            await authService.loginUser(value);
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            sameSite: 'None',
+            secure: true,
+            maxAge: 24 * 60 * 60 * 1000,
+        }).json({ accessToken: accessToken });
     } catch (err) {
         next(err);
     }
 };
 
 //  check refrsh token from cookie then generate new accesstoken and send it to json
-//  new refrsh token in cookie
-export const refreshToken = async (req, res, next) => {
+//  geerate new refrsh token and send in cookie
+export const getRefreshToken = async (req, res, next) => {
     try {
-        res.json({ message: 'refres token!' });
+        const { id, role } = req.user;
+        const data = { id, role };
+
+        const { accessToken, refreshToken } = authService.generateToken(data);
+
+        console.log(accessToken, refreshToken);
+        
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            sameSite: 'None',
+            secure: true,
+            maxAge: 24 * 60 * 60 * 1000,
+        }).json({ accessToken: accessToken });
     } catch (error) {
         next(error);
     }

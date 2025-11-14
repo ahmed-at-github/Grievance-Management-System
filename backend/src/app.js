@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
+import cookieParser from "cookie-parser"
 import {
     morganMiddleware,
     notFoundHandler,
@@ -30,7 +31,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // // middleware for cookies
-// app.use(cookieParser());
+app.use(cookieParser());
 
 // Routes
 app.use('/api/v1', router);

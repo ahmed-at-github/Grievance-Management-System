@@ -14,7 +14,11 @@ const userSchema = new mongoose.Schema(
             unique: true,
             trim: true,
         },
-
+        password: {
+            type: String,
+            required: [true, 'password is required'],
+            unique: true,
+        },
         role: {
             type: String,
             enum: ['student', 'chairman', 'dean', 'admin'],
@@ -32,7 +36,6 @@ const userSchema = new mongoose.Schema(
             },
             sparse: true,
         },
-
         session: {
             type: String,
             required: function () {
@@ -54,7 +57,17 @@ const userSchema = new mongoose.Schema(
             },
         },
     },
-    { timestamps: true },
+    {
+        timestamps: true,
+        toJSON: {
+            transform(doc, ret) {
+                delete ret.password;
+                delete ret.createdAt;
+                delete ret.updatedAt;
+                return ret;
+            },
+        },
+    },
 );
 
 // Ensure only one chairman and one dean
