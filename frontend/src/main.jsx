@@ -11,6 +11,7 @@ import AdminShowAllAccount from "./components/admin/AdminShowAllAccount.jsx";
 import AdminEditAccount from "./components/admin/AdminEditAccount.jsx";
 import Login from "./pages/Login.jsx";
 import UsersInfo from "./pages/UserInfo.jsx";
+import Student from "./pages/Student.jsx";
 
 const router = createBrowserRouter([
   {
@@ -21,7 +22,7 @@ const router = createBrowserRouter([
     path: "/users/:id",
     Component: UsersInfo,
   },
-  
+
   {
     path: "/admin",
     Component: Admin,
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
       { path: "admin-show-all-account", Component: AdminShowAllAccount },
       { path: "admin-edit-account/:id", Component: AdminEditAccount },
     ],
+  },
+  {
+    path: "/student",
+    Component: Student,
   },
 ]);
 
