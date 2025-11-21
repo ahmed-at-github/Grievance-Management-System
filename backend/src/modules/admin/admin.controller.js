@@ -5,7 +5,6 @@ import { adminService } from './admin.service.js';
 export const getAllUsers = async (req, res, next) => {
     try {
         const users = await adminService.getAllUsers();
-        console.log(users);
 
         // mongodb theke all users ene, admin user send krbina
         res.status(Constants.HTTP_STATUS.OK).json({
@@ -63,7 +62,7 @@ export const deleteUserbyId = async (req, res, next) => {
     try {
         const userId = req.params.userId;
 
-        const {message} = await adminService.deleteUserById(userId);
+        const { message } = await adminService.deleteUserById(userId);
 
         res.status(Constants.HTTP_STATUS.OK).json({
             success: true,

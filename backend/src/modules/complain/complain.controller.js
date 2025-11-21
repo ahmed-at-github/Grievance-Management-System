@@ -1,10 +1,14 @@
 import { Constants } from '../../config/constants.js';
 import { CompalainValidator } from '../../utils/validators/complainValidator.js';
-import {Complain} from "../../models/complain.model.js"
+import { Complain } from '../../models/complain.model.js';
+import { complainService } from './complain.service.js';
 
 export async function createComplain(req, res, next) {
     try {
         const body = { ...req.body };
+        const studId = req.user.id;
+
+        body.studentId = studId;
 
         const { error, value } = CompalainValidator.validate(body, {
             abortEarly: false,
@@ -17,23 +21,35 @@ export async function createComplain(req, res, next) {
             });
         }
 
-        const doc = await Complain.create(value);   
-        const complain = await Complain.findById(doc._id).select("-assignedTo");
+        const { message, complain } =
+            await complainService.createComplain(value);
 
-        return res.status(Constants.HTTP_STATUS.OK).json(complain)
+        return res
+            .status(Constants.HTTP_STATUS.OK)
+            .json({ success: true, message, complain });
     } catch (error) {
-        next(error)
+        next(error);
     }
 }
 
 export async function getAllComplains(req, res, next) {
-
     try {
-        const complain = await Complain.find(); // send diff response dependeing on role  
+        const role = req.user.role;
 
-        return res.status(Constants.HTTP_STATUS.OK).json(complain)
-        
+        const { message, complain } =
+            await complainService.getAllComplains(role);
+
+            console.log(complain);
+            
+        return res
+            .status(Constants.HTTP_STATUS.OK)
+            .json({
+                success: true,
+                message,
+                count: complain.length,
+                complain,
+            });
     } catch (error) {
-        next(error)
+        next(error);
     }
 }
