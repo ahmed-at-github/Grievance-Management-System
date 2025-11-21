@@ -39,16 +39,12 @@ export async function getAllComplains(req, res, next) {
         const { message, complain } =
             await complainService.getAllComplains(role);
 
-            console.log(complain);
-            
-        return res
-            .status(Constants.HTTP_STATUS.OK)
-            .json({
-                success: true,
-                message,
-                count: complain.length,
-                data: complain,
-            });
+        return res.status(Constants.HTTP_STATUS.OK).json({
+            success: true,
+            message,
+            count: complain.length,
+            data: complain,
+        });
     } catch (error) {
         next(error);
     }

@@ -29,7 +29,7 @@ export const complainService = {
     },
     getAllComplains: async (role) => {
         if (role == 'student') {
-            const allComplain = await Complain.find().select('-assignedTo', '-studnetId');
+            const allComplain = await Complain.find({}, {assignedTo: 0, studentId: 0})
 
             return {
                 message: 'All Complain Successfully sent',
