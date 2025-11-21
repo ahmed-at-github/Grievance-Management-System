@@ -3,7 +3,7 @@ import express from 'express';
 import authRouter from '../auth/auth.routes.js';
 import adminRouter from '../admin/admin.routes.js';
 import complainRouter from "../complain/complain.routes.js"
-import { Resend } from 'resend';
+
 
 const router = express.Router();
 
@@ -13,9 +13,6 @@ router.get('/health', (req, res) =>
         timestamp: new Date().toISOString(),
     }),
 );
-
-// Create a test account or replace with real credentials.
-const resend = new Resend('re_TcfLWueh_Q4jmhBpr7Gdv7i65wbRXHWmS');
 
 router.use('/', authRouter);
 router.use('/admin', adminRouter);

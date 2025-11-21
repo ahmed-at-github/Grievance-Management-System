@@ -1,6 +1,5 @@
 import { Constants } from '../../config/constants.js';
 import { UserValidator } from '../../utils/validators/userValidator.js';
-import { authService } from '../auth/auth.service.js';
 import { adminService } from './admin.service.js';
 
 export const getAllUsers = async (req, res, next) => {
@@ -41,9 +40,6 @@ export const getUserbyId = async (req, res, next) => {
 export const editUser = async (req, res, next) => {
     try {
         const { userId } = req.params;
-
-        console.log(userId);
-        // mongodb te id ta search krbi je ey id ta ase nki tkhle ok na tkhl error user not found
 
         const { error, value } = UserValidator.validate(req.body, {
             abortEarly: false, // return all validation errors
