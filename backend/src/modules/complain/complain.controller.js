@@ -26,7 +26,7 @@ export async function createComplain(req, res, next) {
 
         return res
             .status(Constants.HTTP_STATUS.OK)
-            .json({ success: true, message, complain });
+            .json({ success: true, message, data: complain });
     } catch (error) {
         next(error);
     }
@@ -47,7 +47,7 @@ export async function getAllComplains(req, res, next) {
                 success: true,
                 message,
                 count: complain.length,
-                complain,
+                data: complain,
             });
     } catch (error) {
         next(error);

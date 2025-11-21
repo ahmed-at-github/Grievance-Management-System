@@ -36,7 +36,7 @@ export const getUserbyId = async (req, res, next) => {
     }
 };
 
-export const editUser = async (req, res, next) => {
+export const editUser = async (req, res, next) => { //work to be done
     try {
         const { userId } = req.params;
 

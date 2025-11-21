@@ -47,7 +47,7 @@ export const complainService = {
         }
 
         const err = new Error(
-            'Error sending Complain. Role undefined',
+            'Error sending Complain. Role undefined!',
         );
         err.statusCode = 400;
         throw err;

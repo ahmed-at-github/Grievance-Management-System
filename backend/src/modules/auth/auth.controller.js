@@ -5,7 +5,6 @@ import {
 import { authService } from './auth.service.js';
 import { Constants } from '../../config/constants.js';
 
-
 export const register = async (req, res, next) => {
     try {
         const { error, value } = UserValidator.validate(req.body, {
@@ -53,7 +52,7 @@ export const handleLogin = async (req, res, next) => {
                 secure: false,
                 maxAge: 24 * 60 * 60 * 1000,
             })
-            .json({ accessToken: accessToken });
+            .json({ success: true, accessToken: accessToken });
     } catch (err) {
         next(err);
     }
@@ -75,7 +74,7 @@ export const getRefreshToken = async (req, res, next) => {
                 secure: true,
                 maxAge: 24 * 60 * 60 * 1000,
             })
-            .json({ accessToken: accessToken });
+            .json({ success: true, accessToken: accessToken });
     } catch (error) {
         next(error);
     }
@@ -109,7 +108,10 @@ export const handleLogout = async (req, res, next) => {
                 secure: false,
             })
             .status(Constants.HTTP_STATUS.OK)
-            .json({ message: 'User loggedOut, Refresh token cleared' });
+            .json({
+                success: true,
+                message: 'User loggedOut, Refresh token cleared',
+            });
     } catch (err) {
         next(err);
     }
