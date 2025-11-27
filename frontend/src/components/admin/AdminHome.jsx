@@ -101,6 +101,9 @@ const AdminHome = () => {
         <Link to="admin-show-all-account" className="btn btn-neutral">
           Show all Account
         </Link>
+        <Link to="admin-create-chairman-account" className="btn btn-neutral">
+          Create chairman Account
+        </Link>
       </div>
     </div>
   );

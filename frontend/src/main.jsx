@@ -12,6 +12,9 @@ import AdminEditAccount from "./components/admin/AdminEditAccount.jsx";
 import Login from "./pages/Login.jsx";
 import UsersInfo from "./pages/UserInfo.jsx";
 import Student from "./pages/Student.jsx";
+import AdminCreateChairman from "./components/admin/AdminCreateChairman.jsx";
+import Chairman from "./pages/Chairman.jsx";
+import ChairmanHome from "./components/chairman/ChairmanHome.jsx";
 
 const router = createBrowserRouter([
   {
@@ -31,11 +34,19 @@ const router = createBrowserRouter([
       { path: "admin-create-account", Component: AdminCreateAccount },
       { path: "admin-show-all-account", Component: AdminShowAllAccount },
       { path: "admin-edit-account/:id", Component: AdminEditAccount },
+      { path: "admin-create-chairman-account", Component: AdminCreateChairman },
     ],
   },
   {
     path: "/student",
     Component: Student,
+  },
+  {
+    path: "/chairman",
+    Component: Chairman,
+    children: [
+      {index:true, Component: ChairmanHome}
+    ]
   },
 ]);
 
