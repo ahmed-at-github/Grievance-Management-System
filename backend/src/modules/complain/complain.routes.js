@@ -8,14 +8,14 @@ const router = Router();
 router.post(
     '/create',
     verifyAccessToken,
-    authorizeRole(['admin', 'student']),
+    authorizeRole(['student']),
     complainController.createComplain,
 ); //studnet middleware, complain text, title  cannt be same , within same studnetId
 
 router.get(
     '/',
     verifyAccessToken,
-    authorizeRole(['admin', 'student']),
+    authorizeRole(['admin', 'student', 'chairman', 'decision committee']),
     complainController.getAllComplains,
 ); //admin, studnet middleware
 

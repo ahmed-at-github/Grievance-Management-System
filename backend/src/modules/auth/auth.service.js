@@ -44,7 +44,9 @@ export const authService = {
         }
 
         const customPassword = generatePass();
-        sendMail(body.email, customPassword);
+        await sendMail(body.email, customPassword);
+        
+        
         const hashPass = await hashPassword(customPassword);
         body.password = hashPass;
 

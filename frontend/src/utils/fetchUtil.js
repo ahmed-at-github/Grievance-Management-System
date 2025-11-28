@@ -20,10 +20,11 @@ export const fetchWithRefresh = async (url, options = {}) => {
 
   let response = await fetch(url, { ...options, headers });
 
-  if (response.status === 404 || response.status === 401) {
+  if (!response.ok) {
     // Access token expired, try refresh
     try {
       const newToken = await refreshAccessToken();
+      // set token in localstorage 
       headers["Authorization"] = `Bearer ${newToken}`;
       response = await fetch(url, { ...options, headers }); // retry original request
     } catch (err) {

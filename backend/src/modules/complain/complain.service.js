@@ -41,8 +41,8 @@ export const complainService = {
             };
         }
 
-        if (role == 'admin') {
-            const allComplain = await Complain.find();
+        if (role === 'admin' || role === 'chairman' || role ==='decision committee'  ) {
+            const allComplain = await Complain.find().populate('studentId');
 
             return {
                 message: 'All Complain Successfully sent',

@@ -55,6 +55,8 @@ const Login = () => {
         navigate("/admin"); // redirect admin to admin page
       } else if (meData.data.role === "student") {
         navigate("/student");
+      } else if (meData.data.role === "chairman") {
+        navigate("/chairman");
       }
     } catch (err) {
       console.error(err);
