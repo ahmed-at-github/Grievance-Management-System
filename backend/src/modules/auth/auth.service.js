@@ -29,6 +29,20 @@ export const authService = {
             throw err;
         }
 
+        if (body.role === 'chairman' || body.role === 'decision committee') {
+            const roleExists = await User.findOne({
+                $or: [{ role: 'chairman' }, { role: 'decision committee' }],
+            });
+
+            if (roleExists) {
+                const err = new Error(
+                    `A ${body.role} already exists. Cannot create another ${body.role}.`,
+                );
+                err.statusCode = 400; // Bad request
+                throw err;
+            }
+        }
+
         const customPassword = generatePass();
         sendMail(body.email, customPassword);
         const hashPass = await hashPassword(customPassword);

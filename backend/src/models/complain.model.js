@@ -27,9 +27,14 @@ const complainSchema = new mongoose.Schema(
         },
         assignedTo: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'User', // chairman or dean
+            ref: 'User', // chairman or committe
         },
-        response: String,
+        response: {
+            type: String,
+            trim: true,
+            minlength: 2,
+            maxlength: 500,
+        },
     },
     { timestamps: true },
 );

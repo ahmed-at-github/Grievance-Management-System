@@ -1,3 +1,4 @@
+import { response } from 'express';
 import Joi from 'joi';
 
 export const CompalainValidator = Joi.object({
@@ -16,3 +17,19 @@ export const CompalainValidator = Joi.object({
         .valid('pending', 'in-review', 'resolved', 'rejected'),
     assignedTo: Joi.string().trim(),
 }).min(3); // at least one field must be provided
+
+export const CompalainEditValidator = Joi.object({
+    category: Joi.string().valid(
+        'academic',
+        'administrative',
+        'dean',
+        'infrastructure',
+        'other',
+    ),
+    status: Joi.string()
+        .trim()
+        .valid('pending', 'in-review', 'resolved', 'rejected'),
+    assignedTo: Joi.string()
+        .trim(),
+    response: Joi.string().trim().min(2).max(500),
+}).min(1); // at least one field must be provided

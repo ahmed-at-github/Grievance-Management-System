@@ -19,4 +19,8 @@ router.get(
     complainController.getAllComplains,
 ); //admin, studnet middleware
 
+// patch /:id add tag, assign, reply, comment authenticate role: chairman, dec comm
+router.patch('/:id' , verifyAccessToken,
+    authorizeRole(['chairman', 'decision committee']), complainController.editComplain)
+
 export default router;

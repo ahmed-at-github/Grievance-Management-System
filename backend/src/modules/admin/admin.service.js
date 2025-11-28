@@ -10,7 +10,7 @@ export const adminService = {
     getUserById: async (id) => {
         const user = await User.findOne({
             _id: id,
-            role: { $ne: 'admin' },
+            role: { $ne: ['admin', 'chairman', 'decision committe'] },
         });
 
         if (!user) {

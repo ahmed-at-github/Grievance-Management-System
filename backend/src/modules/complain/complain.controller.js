@@ -1,5 +1,8 @@
 import { Constants } from '../../config/constants.js';
-import { CompalainValidator } from '../../utils/validators/complainValidator.js';
+import {
+    CompalainEditValidator,
+    CompalainValidator,
+} from '../../utils/validators/complainValidator.js';
 import { Complain } from '../../models/complain.model.js';
 import { complainService } from './complain.service.js';
 
@@ -47,5 +50,33 @@ export async function getAllComplains(req, res, next) {
         });
     } catch (error) {
         next(error);
+    }
+}
+
+export async function editComplain(req, res, next) {
+    try {
+        const id = req.params.id;
+        const body = req.body;
+
+        const { error, value } = CompalainEditValidator.validate(body, {
+            abortEarly: false,
+        });
+        if (error) {
+            return res.status(Constants.HTTP_STATUS.BAD_REQUEST).json({
+                message: 'Valiation Failed',
+                errors: error.details.map((d) => d.message),
+            });
+        }
+
+        const { message, updateComplain } = await complainService.editComplain(
+            value,
+            id,
+        );
+
+        return res
+            .status(Constants.HTTP_STATUS.OK)
+            .json({ success: true, message, data: updateComplain });
+    } catch (err) {
+        next(err);
     }
 }
