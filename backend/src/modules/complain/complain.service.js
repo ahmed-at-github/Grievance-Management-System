@@ -1,4 +1,5 @@
 import { Complain } from '../../models/complain.model.js';
+import { editComplain } from './complain.controller.js';
 
 export const complainService = {
     createComplain: async (body) => {
@@ -29,7 +30,10 @@ export const complainService = {
     },
     getAllComplains: async (role) => {
         if (role == 'student') {
-            const allComplain = await Complain.find({}, {assignedTo: 0, studentId: 0})
+            const allComplain = await Complain.find(
+                {},
+                { assignedTo: 0, studentId: 0 },
+            );
 
             return {
                 message: 'All Complain Successfully sent',
@@ -46,10 +50,37 @@ export const complainService = {
             };
         }
 
-        const err = new Error(
-            'Error sending Complain. Role undefined!',
-        );
+        const err = new Error('Error sending Complain. Role undefined!');
         err.statusCode = 400;
         throw err;
+    },
+    editComplain: async (body, id) => {
+        const complaint = await Complain.findById(id);
+
+        if (complaint.status === 'resolved') {
+            const err = new Error('Resolved complaints cannot be edited.');
+            err.statusCode = 400;
+            throw err;
+        }
+
+        const updateComplain = await Complain.findByIdAndUpdate(
+            id,
+            { $set: body }, // <-- Uses frontend body
+            { new: true, runValidators: true }, // Apply validations!
+        );
+        //assigned to is ref to user
+
+        if (!updateComplain) {
+            const err = new Error(
+                'Error updating Complain. Complain maybe not found',
+            );
+            err.statusCode = 400;
+            throw err;
+        }
+
+        return {
+            message: 'Complain updated Successfully',
+            updateComplain,
+        };
     },
 };
