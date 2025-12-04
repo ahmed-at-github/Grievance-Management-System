@@ -99,8 +99,11 @@ export default function Student() {
         `}
       </style>
 
-      <div className="m-4">
-        <div className="flex flex-wrap items-center m-4 gap-6">
+      <div>
+
+ {/* NavBar Section */}
+     <div class="navbar bg-base-100 shadow-sm mb-8">
+        <div className="flex flex-wrap items-center gap-6">
           <div className="flex items-center gap-4">
             <img
               className="h-20 w-20 rounded-full object-cover border-2 border-blue-200"
@@ -116,11 +119,12 @@ export default function Student() {
             <h1 className="text-3xl font-bold">Navbar</h1>
           </div>
         </div>
+        </div>
 
-        <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex flex-col md:flex-row gap-5">
           {/* Left: Complains */}
-          <div className="flex-1 min-w-[300px]">
-            <div className="card bg-base-100 shadow-sm p-4">
+          <div className="flex-1 min-w-[300\\px]">
+            <div className="card bg-base-100 shadow-sm p-2">
               <h2 className="card-title text-2xl font-bold mb-4">
                 Previous Messages
               </h2>
@@ -169,20 +173,20 @@ export default function Student() {
 
           {/* Right: Input */}
           <div className="flex-1 min-w-[300px]">
-            <fieldset className="fieldset rounded py-4 mb-4">
+            <fieldset className="fieldset rounded py-4 mb-2">
               <legend className="fieldset-legend text-[14px] font-sans">
                 Problem Title
               </legend>
               <input
                 type="text"
-                className="input w-full px-3 py-3 border rounded"
-                placeholder="Enter problem title"
+                className="input w-full px-3 py-3 border rounded "
+                placeholder="Enter problem title" 
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
             </fieldset>
 
-            <fieldset className="fieldset w-full mb-4">
+            <fieldset className="fieldset w-full mb-2">
               <legend className="fieldset-legend text-[14px]">
                 Description
               </legend>
@@ -194,7 +198,18 @@ export default function Student() {
               />
             </fieldset>
 
-            <button
+           {/* select private or public  */}
+           <legend className="fieldset-legend text-[14px] font-sans mb-2">
+                Problem Type
+              </legend>
+<div className="flex gap-x-4 mb-4 ">
+<input type="radio" name="radio-7" class="radio radio-success " />
+ <span>Public</span>
+<input type="radio" name="radio-7" class="radio radio-success" />
+ <span>Private</span>
+</div>
+{/* Button section */}
+ <button
               onClick={handleSend}
               className="flex items-center justify-center gap-2 bg-green-500 w-full py-2 hover:bg-green-400 rounded-full text-white font-semibold transition duration-150"
             >

@@ -15,6 +15,7 @@ import Student from "./pages/Student.jsx";
 import AdminCreateChairman from "./components/admin/AdminCreateChairman.jsx";
 import Chairman from "./pages/Chairman.jsx";
 import ChairmanHome from "./components/chairman/ChairmanHome.jsx";
+import Decision from "./pages/Decision.jsx";
 
 const router = createBrowserRouter([
   {
@@ -41,6 +42,12 @@ const router = createBrowserRouter([
     path: "/student",
     Component: Student,
   },
+
+{
+    path: "/decision",
+    Component: Decision,
+  },
+
   {
     path: "/chairman",
     Component: Chairman,
