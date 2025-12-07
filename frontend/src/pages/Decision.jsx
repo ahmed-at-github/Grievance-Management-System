@@ -18,7 +18,7 @@ export default function Decision() {
       <div className="flex items-center gap-4">
             <img
               className="h-20 w-20 rounded-full object-cover border-2 border-blue-200"
-              src="../src/assets/cartoon-illustration-scholar-academic_272293-4645.jpeg"
+              src="../src/assets/committee.jpg"
             />
             <h1 className="my-2 font-semibold text-xl">Decision Committee Panel</h1>
             <button className="btn btn-neutral" >
