@@ -39,8 +39,8 @@ export default function Decision() {
   <div class="card-body">
     
   {/* Message */}
-  <h1 className="text-center font-semibold mb-2 font-sans text-2xl">New Messages</h1>
-  <div class="card hover:bg-base-200 bg-base-100 w-[43vw]  shadow-sm">
+  <h1 className="text-center font-semibold mb-2 font-sans text-2xl">🔔 New Messages</h1>
+  <div class="card hover:bg-base-200 bg-base-100 w-[45vw]  shadow-sm">
     <div class="card-body">
       <div className="flex gap-4">
     <h2 class="card-title">Broken Classroom Projector</h2>
@@ -51,14 +51,20 @@ export default function Decision() {
   {/* Response */}
 
 
-  <div>
+ {/* You can open the modal using document.getElementById('ID').showModal() method */}
 
 
-<label for="my_modal_6" class="btn hover:bg-green-500 bg-green-600 text-white font-semibold">Solution</label>
+{/* Forwarded to chairman */}
 
-<input type="checkbox" id="my_modal_6" class="modal-toggle" />
-<div class="modal " role="dialog">
-  <div class="modal-box h-[60vh]">
+<button className="btn bg-cyan-600 hover:bg-cyan-500 text-white" onClick={()=>document.getElementById('my_modal_3').showModal()}>Forward</button>
+<dialog id="my_modal_3" className="modal">
+  <div className="modal-box">
+    <form method="dialog">
+      {/* if there is a button in form, it will close the modal */}
+      <button className="btn btn-sm btn-circle btn-ghost absolute right-2 text-2xl top-2">✕</button>
+    </form>
+    {/* problem response */}
+
     <div className="flex gap-4">
     <h2 class="card-title">Broken Classroom Projector</h2>
     <span className="badge font-semibold bg-red-400 text-white">Private</span>  
@@ -80,158 +86,11 @@ export default function Decision() {
 </button>
 </div>
    
-   <div className="flex justify-start gap-4">
-            <fieldset className="fieldset rounded py-4 m-3 mb-2">
-              <legend className="fieldset-legend text-[14px] font-sans">
-                Response
-              </legend>
-
-           <input type="text" placeholder="Write your decision..."   class="input border  px-15 ml-4 " />
-            </fieldset>
-
-          
-  <button className="flex items-center  px-2 py-2 mt-16 ml-8  mb-6 bg-green-600  hover:bg-green-500 rounded-md text-white font-semibold transition duration-150"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                className="w-5 h-5 m-0.5"
-              >
-                <path d="M3.4 20.4 22 12 3.4 3.6 3 10l12 2-12 2z" />
-              </svg>
-              Send
-            </button>
-          
-
-            </div>
-
-
-
-
-       <div class="modal-action ">
-      <div className="flex gap-8">
-      <div >
-      <label for="my_modal_6" class="btn hover:bg-blue-500 bg-blue-600 text-white justify-end mx-auto">Done</label>
-      </div>
-      <div>
-      <label for="my_modal_6" class="btn hover:bg-red-500 bg-red-600 text-white justify-end  mx-auto">Cancel</label>
-      </div>
-      
-      </div>
-      
-    </div>
-  </div>
-</div>
-
-  </div>
-
-
-{/* Reject option */}
-<div>
-
-
-<label for="my_modal_7" class="btn hover:bg-red-500 bg-red-600 text-white font-semibold">Reject</label>
-
-<input type="checkbox" id="my_modal_7" class="modal-toggle" />
-<div class="modal " role="dialog">
-  <div class="modal-box h-[60vh]">
-   <div className="flex gap-4">
-    <h2 class="card-title">Broken Classroom Projector</h2>
-    <span className="badge font-semibold bg-red-400 text-white">Private</span>  
-    </div>
-   <div className="flex-1">
-
-    {/* paragraph */}
-   <p
-  className={`text-gray-700 font-sans m-1 ${!expanded ? "line-clamp-2" : ""}`}
->
-  The projector in Room 305 is not functioning properly. It flickers and sometimes shuts down during lectures, making it difficult for students to follow the class. Requesting maintenance as soon as possible.
-</p>
-{/* see more function */}
-<button
-  className="text-blue-500 hover:underline m-2"
-  onClick={() => setExpanded(!expanded)}
->
-  {expanded ? "See less" : "See more"}
-</button>
-</div>
-   
-   <div className="flex justify-start gap-4">
-            <fieldset className="fieldset rounded py-4 m-3 mb-2">
-              <legend className="fieldset-legend text-[14px] font-sans">
-                Response
-              </legend>
-
-           <input type="text" required placeholder="Write your decision..." class="input border  px-15 ml-4" />
-            </fieldset>
-    
-
-
-  <button className="flex items-center  px-2 py-2 mt-16 ml-8  mb-6 bg-green-600  hover:bg-green-500 rounded-md text-white font-semibold transition duration-150"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                className="w-5 h-5 m-0.5"
-              >
-                <path d="M3.4 20.4 22 12 3.4 3.6 3 10l12 2-12 2z" />
-              </svg>
-              Send
-            </button>
+   <div className=" gap-4">
             
+      {/* selection dropdown */}
 
-            </div>
-
-       <div class="modal-action ">
-      <div className="flex gap-8">
-      <div >
-      <label for="my_modal_7" class="btn hover:bg-blue-500 bg-blue-600 text-white justify-end  mx-auto">Done</label>
-      </div>
-      <div>
-      <label for="my_modal_7" class="btn hover:bg-red-500 bg-red-600 text-white justify-end mx-auto">Cancel</label>
-      </div>
-      
-      </div>
-      
-    </div>
-  </div>
-</div>
-
-  </div>
-
-<div>
-
-
-<label for="my_modal_9" class="btn hover:bg-cyan-500 bg-cyan-600 text-white font-semibold">Forward</label>
-
-<input type="checkbox" id="my_modal_9" class="modal-toggle" />
-<div class="modal " role="dialog">
-  <div class="modal-box h-[60vh]">
-    <div className="flex gap-4">
-    <h2 class="card-title">Broken Classroom Projector</h2>
-    <span className="badge font-semibold bg-red-400 text-white">Private</span>  
-    </div>
-   <div className="flex-1">
-
-    {/* paragraph */}
-   <p
-  className={`text-gray-700 font-sans m-1 ${!expanded ? "line-clamp-2" : ""}`}
->
-  The projector in Room 305 is not functioning properly. It flickers and sometimes shuts down during lectures, making it difficult for students to follow the class. Requesting maintenance as soon as possible.
-</p>
-{/* see more function */}
-<button
-  className="text-blue-500 hover:underline m-2"
-  onClick={() => setExpanded(!expanded)}
->
-  {expanded ? "See less" : "See more"}
-</button>
-</div>
-  
-
-    <div className="m-4">
+ <div className="m-4">
    <label for="role" class="block mb-1 font-medium text-gray-700">
   
 </label>
@@ -252,23 +111,175 @@ export default function Decision() {
     </div>
 
 
-    <div class="modal-action ">
-      <div className="flex gap-8">
-      <div >
-      <label for="my_modal_9" class="btn hover:bg-blue-500 bg-blue-600 text-white justify-end my-8 mx-auto">Done</label>
-      </div>
-      <div>
-      <label for="my_modal_9" class="btn hover:bg-red-500 bg-red-600 text-white justify-end my-8 mx-auto">Cancel</label>
-      </div>
-      
-      </div>
-      
+          
+  <button
+              className="flex items-center justify-center gap-2 bg-green-500 w-full py-2 hover:bg-green-400 rounded-full text-white font-semibold transition duration-150"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                className="w-5 h-5"
+              >
+                <path d="M3.4 20.4 22 12 3.4 3.6 3 10l12 2-12 2z" />
+              </svg>
+              Send
+            </button>
+          
+
+            </div>
+
+
+
+
+  </div>
+</dialog>
+
+
+
+
+
+
+
+
+
+{/* Solution option */}
+<button className="btn bg-green-600 hover:bg-green-500 text-white" onClick={()=>document.getElementById('my_modal_4').showModal()}>Solution</button>
+<dialog id="my_modal_4" className="modal">
+  <div className="modal-box">
+    <form method="dialog">
+      {/* if there is a button in form, it will close the modal */}
+      <button className="btn btn-sm btn-circle btn-ghost absolute right-2 text-2xl top-2">✕</button>
+    </form>
+    {/* problem response */}
+
+    <div className="flex gap-4">
+    <h2 class="card-title">Broken Classroom Projector</h2>
+    <span className="badge font-semibold bg-red-400 text-white">Private</span>  
     </div>
+   <div className="flex-1">
 
-  </div>
+    {/* paragraph */}
+   <p
+  className={`text-gray-700 font-sans m-1 ${!expanded ? "line-clamp-2" : ""}`}
+>
+  The projector in Room 305 is not functioning properly. It flickers and sometimes shuts down during lectures, making it difficult for students to follow the class. Requesting maintenance as soon as possible.
+</p>
+{/* see more function */}
+<button
+  className="text-blue-500 hover:underline m-2"
+  onClick={() => setExpanded(!expanded)}
+>
+  {expanded ? "See less" : "See more"}
+</button>
 </div>
+   
+   <div className=" gap-4">
+            <fieldset className="fieldset rounded py-4 mb-2">
+              <legend className="fieldset-legend text-[14px] font-sans">
+               Solution Comment
+              </legend>
+              <input
+                type="text"
+                className="input w-full px-3 py-3 border rounded "
+                placeholder="Write the solution or resolution here…" 
+              
+              />
+            </fieldset>
+
+          
+  <button
+              className="flex items-center justify-center gap-2 bg-green-500 w-full py-2 hover:bg-green-400 rounded-full text-white font-semibold transition duration-150"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                className="w-5 h-5"
+              >
+                <path d="M3.4 20.4 22 12 3.4 3.6 3 10l12 2-12 2z" />
+              </svg>
+              Send
+            </button>
+          
+
+            </div>
+
+
+
 
   </div>
+</dialog>
+
+
+{/* Reject option */}
+  
+  <button className="btn bg-red-600 hover:bg-red-500 text-white" onClick={()=>document.getElementById('my_modal_5').showModal()}>Reject</button>
+<dialog id="my_modal_5" className="modal">
+  <div className="modal-box">
+    <form method="dialog">
+      {/* if there is a button in form, it will close the modal */}
+      <button className="btn btn-sm btn-circle btn-ghost absolute right-2 text-2xl top-2">✕</button>
+    </form>
+    {/* problem response */}
+
+    <div className="flex gap-4">
+    <h2 class="card-title">Broken Classroom Projector</h2>
+    <span className="badge font-semibold bg-red-400 text-white">Private</span>  
+    </div>
+   <div className="flex-1">
+
+    {/* paragraph */}
+   <p
+  className={`text-gray-700 font-sans m-1 ${!expanded ? "line-clamp-2" : ""}`}
+>
+  The projector in Room 305 is not functioning properly. It flickers and sometimes shuts down during lectures, making it difficult for students to follow the class. Requesting maintenance as soon as possible.
+</p>
+{/* see more function */}
+<button
+  className="text-blue-500 hover:underline m-2"
+  onClick={() => setExpanded(!expanded)}
+>
+  {expanded ? "See less" : "See more"}
+</button>
+</div>
+   
+   <div className=" gap-4">
+            <fieldset className="fieldset rounded py-4 mb-2">
+              <legend className="fieldset-legend text-[14px] font-sans">
+                Rejection Comment
+              </legend>
+              <input
+                type="text"
+                className="input w-full px-3 py-3 border rounded "
+                placeholder="Write your rejection reason here…" 
+              
+              />
+            </fieldset>
+
+          
+  <button
+              className="flex items-center justify-center gap-2 bg-green-500 w-full py-2 hover:bg-green-400 rounded-full text-white font-semibold transition duration-150"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                className="w-5 h-5"
+              >
+                <path d="M3.4 20.4 22 12 3.4 3.6 3 10l12 2-12 2z" />
+              </svg>
+              Send
+            </button>
+          
+
+            </div>
+
+
+
+
+  </div>
+</dialog>
 
     </div>
   </div>
@@ -283,7 +294,7 @@ export default function Decision() {
  
 <div class="card  bg-base-100 w-[47vw] shadow-sm  p-2  h-[77vh] overflow-scroll">
   <div class="card-body">
-    <h1 className="text-center font-semibold mb-2 font-sans text-2xl">Solved Messages</h1>
+    <h1 className="text-center font-semibold mb-2 font-sans text-2xl">✅ Solved Messages</h1>
   {/* Message */}
 
   <div class="card bg-base-100 w-[43vw]  shadow-sm">
