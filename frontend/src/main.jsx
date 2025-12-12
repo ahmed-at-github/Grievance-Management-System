@@ -15,12 +15,15 @@ import Student from "./pages/Student.jsx";
 import AdminCreateChairman from "./components/admin/AdminCreateChairman.jsx";
 import Chairman from "./pages/Chairman.jsx";
 import ChairmanHome from "./components/chairman/ChairmanHome.jsx";
+import ChairmanProfile from "./components/chairman/ChairmanProfile.jsx";
+import ErrorPage from "./pages/ErrorPage.jsx";
 import Decision from "./pages/Decision.jsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
     Component: Login,
+    errorElement: <ErrorPage></ErrorPage> 
   },
   {
     path: "/users/:id",
@@ -52,7 +55,11 @@ const router = createBrowserRouter([
     path: "/chairman",
     Component: Chairman,
     children: [
-      {index:true, Component: ChairmanHome}
+      {index:true, Component: ChairmanHome},
+      {
+        path: "profile",
+        Component: ChairmanProfile
+      }
     ]
   },
 ]);

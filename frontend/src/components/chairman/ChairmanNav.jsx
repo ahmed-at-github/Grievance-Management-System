@@ -1,31 +1,21 @@
 import React from "react";
-import { Link, useNavigate } from "react-router";
+import { NavLink } from "react-router";
+import logo from "../../assets/iiuclogo.png";
 
 const ChairmanNav = () => {
-  const navigate = useNavigate(); 
-  const handleLogout = async () => {
-    const loginRes = await fetch("http://localhost:4000/api/v1/logout", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-    });
-    let msg = await loginRes.json();
-    console.log(msg);
-
-    localStorage.removeItem("accessToken");
-    navigate("/");
-  };
   return (
-    <div className="navbar bg-base-100 shadow-sm">
-      <div className="flex-1">
-        <Link to={"/chairman"} className="btn btn-ghost text-xl">
+    <div className="navbar bg-base-100 shadow-lg">
+      <div className="flex-1 flex items-center pl-5">
+        <img src={logo} className="w-9  h-9" alt="" />
+        <NavLink to={"/chairman"} className="btn btn-ghost text-xl">
           Chairman
-        </Link>
+        </NavLink>
       </div>
       <div className="flex-none">
-        <button className="btn btn-neutral" onClick={handleLogout}>
-          Logout
-        </button>
+        <div className="menu menu-horizontal px-4 flex items-center gap-5">
+          <NavLink to={"profile"} className="font-semibold">Profile</NavLink>
+          <NavLink className="btn btn-neutral font-medium" to={""}>Logout</NavLink>
+        </div>
       </div>
     </div>
   );
