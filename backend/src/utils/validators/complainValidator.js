@@ -14,7 +14,10 @@ export const CompalainValidator = Joi.object({
     ),
     status: Joi.string()
         .trim()
-        .valid('pending', 'in-review', 'resolved', 'rejected'),
+        .valid('pending', 'approved', 'resolved', 'rejected'),
+    view: Joi.string()
+        .trim()
+        .valid('public', 'private'),
     assignedTo: Joi.string().trim(),
 }).min(3); // at least one field must be provided
 
@@ -28,8 +31,8 @@ export const CompalainEditValidator = Joi.object({
     ),
     status: Joi.string()
         .trim()
-        .valid('pending', 'in-review', 'resolved', 'rejected'),
-    assignedTo: Joi.string()
-        .trim(),
+        .valid('pending', 'in-review', 'resolved', 'rejected')
+        .required(),
+    assignedTo: Joi.string().trim().required(),
     response: Joi.string().trim().min(2).max(500),
 }).min(1); // at least one field must be provided

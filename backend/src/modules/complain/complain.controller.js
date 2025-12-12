@@ -3,7 +3,6 @@ import {
     CompalainEditValidator,
     CompalainValidator,
 } from '../../utils/validators/complainValidator.js';
-import { Complain } from '../../models/complain.model.js';
 import { complainService } from './complain.service.js';
 
 export async function createComplain(req, res, next) {
@@ -53,6 +52,27 @@ export async function getAllComplains(req, res, next) {
     }
 }
 
+export async function getAllPvtComplains(req, res, next) {
+    try {
+        const role = req.user.role;
+        const userId = req.params.id;
+
+        const { message, complain } = await complainService.getAllPvtComplains(
+            role,
+            userId,
+        );
+
+        return res.status(Constants.HTTP_STATUS.OK).json({
+            success: true,
+            message,
+            count: complain.length,
+            data: complain,
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
 export async function editComplain(req, res, next) {
     try {
         const id = req.params.id;
@@ -76,6 +96,21 @@ export async function editComplain(req, res, next) {
         return res
             .status(Constants.HTTP_STATUS.OK)
             .json({ success: true, message, data: updateComplain });
+    } catch (err) {
+        next(err);
+    }
+}
+
+export async function deleteComplain(req, res, next) {
+    try {
+        const id = req.params.id;
+
+        // You might want to pass req.user here later to verify ownership
+        const { message } = await complainService.deleteComplain(id);
+
+        return res
+            .status(Constants.HTTP_STATUS.OK)
+            .json({ success: true, message });
     } catch (err) {
         next(err);
     }

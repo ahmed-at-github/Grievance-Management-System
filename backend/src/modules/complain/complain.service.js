@@ -1,5 +1,6 @@
 import { Complain } from '../../models/complain.model.js';
-import { editComplain } from './complain.controller.js';
+import User from '../../models/user.model.js';
+import { deleteComplain, editComplain } from './complain.controller.js';
 
 export const complainService = {
     createComplain: async (body) => {
@@ -31,7 +32,7 @@ export const complainService = {
     getAllComplains: async (role) => {
         if (role == 'student') {
             const allComplain = await Complain.find(
-                {},
+                {view: "public"},
                 { assignedTo: 0, studentId: 0 },
             );
 
@@ -41,8 +42,14 @@ export const complainService = {
             };
         }
 
-        if (role === 'admin' || role === 'chairman' || role ==='decision committee'  ) {
-            const allComplain = await Complain.find().populate('studentId');
+        if (
+            role === 'admin' ||
+            role === 'chairman' ||
+            role === 'decision committee'
+        ) {
+            const allComplain = await Complain.find({
+                view: "public"
+            }).populate('studentId');
 
             return {
                 message: 'All Complain Successfully sent',
@@ -54,11 +61,63 @@ export const complainService = {
         err.statusCode = 400;
         throw err;
     },
+
+    getAllPvtComplains: async (role, userId) => {
+        const user = User.findById(userId);
+
+        if (!user || user.role === role) {
+            const err = new Error('Error User not found');
+            err.statusCode = 404;
+            throw err;
+        }
+
+        if (role === 'student') {
+            // Only fetches private complaints for this specific user
+            const pvtComplains = await Complain.find(
+                {
+                    studentId: userId,
+                    view: 'private',
+                },
+                { studentId: 0},
+            ).populate({path: "assignedTo", select: "-email, -name"});
+
+            return {
+                message: 'All Complain Successfully sent',
+                complain: pvtComplains,
+            };
+        }
+
+        if (
+            role === 'chairman' ||
+            role === 'decision committee'
+        ) {
+            // Only fetches private complaints for this specific user
+            const pvtComplains = await Complain.find({
+                assignedTo: userId,
+                view: 'private',
+            }).populate('studentId');
+
+            return {
+                message: 'All Complain Successfully sent',
+                complain: pvtComplains,
+            };
+        }
+
+        const err = new Error('Error sending Complain. Role undefined!');
+        err.statusCode = 400;
+        throw err;
+    },
+
     editComplain: async (body, id) => {
         const complaint = await Complain.findById(id);
 
-        if (complaint.status === 'resolved') {
-            const err = new Error('Resolved complaints cannot be edited.');
+        if (
+            complaint.status === 'resolved' ||
+            complaint.status === 'rejected'
+        ) {
+            const err = new Error(
+                'Resolved or Rejected complaints cannot be edited.',
+            );
             err.statusCode = 400;
             throw err;
         }
@@ -83,4 +142,17 @@ export const complainService = {
             updateComplain,
         };
     },
+
+    deleteComplain: async (id) => {
+    // findByIdAndDelete returns the document that was deleted
+    const deletedComplain = await Complain.findByIdAndDelete(id);
+
+    if (!deletedComplain) {
+        const error = new Error('Complain not found');
+        error.status = 404; // Or Constants.HTTP_STATUS.NOT_FOUND
+        throw error;
+    }
+
+    return { message: 'Complain deleted successfully' };
+}
 };

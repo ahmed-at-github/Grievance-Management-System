@@ -22,8 +22,15 @@ const complainSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['pending', 'in-review', 'resolved', 'rejected'],
+            enum: ['pending', 'approved', 'resolved', 'rejected'],
             default: 'pending',
+            required: true,
+        },
+        view: {
+            type: String,
+            enum: ['public', 'private'],
+            default: 'private',
+            required: true,
         },
         assignedTo: {
             type: mongoose.Schema.Types.ObjectId,
