@@ -99,8 +99,11 @@ export default function Student() {
         `}
       </style>
 
-      <div className="m-4">
-        <div className="flex flex-wrap items-center m-4 gap-6">
+      <div className="bg-green-200 h-[100vh] ">
+
+ {/* NavBar Section */}
+     <div class="navbar bg-base-100 shadow-sm mb-8">
+        <div className="flex flex-wrap items-center gap-6">
           <div className="flex items-center gap-4">
             <img
               className="h-20 w-20 rounded-full object-cover border-2 border-blue-200"
@@ -116,13 +119,14 @@ export default function Student() {
             <h1 className="text-3xl font-bold">Navbar</h1>
           </div>
         </div>
-
-        <div className="flex flex-col md:flex-row gap-6">
+        </div>
+        
+        <div className="m-2 flex justify-between gap-4">
           {/* Left: Complains */}
-          <div className="flex-1 min-w-[300px]">
-            <div className="card bg-base-100 shadow-sm p-4">
-              <h2 className="card-title text-2xl font-bold mb-4">
-                Previous Messages
+          <div className="">
+            <div className="card  bg-base-100 w-[49vw] shadow-sm h-[77vh] p-4 overflow-scroll">
+              <h2 className="text-2xl font-bold text-center">
+                📩 General Message Feed
               </h2>
 
               {complains.length === 0 ? (
@@ -168,21 +172,41 @@ export default function Student() {
           </div>
 
           {/* Right: Input */}
-          <div className="flex-1 min-w-[300px]">
-            <fieldset className="fieldset rounded py-4 mb-4">
+          
+           <div className="card  bg-base-100 w-[49vw] shadow-sm h-[77vh] p-4 overflow-scroll">
+            <div className="flex justify-between gap-4">
+            <div>
+           <h2 className="text-2xl font-bold text-center">
+            🔒 My Messages
+              </h2>
+              </div>
+              
+              {/* input section */}
+             {/* You can open the modal using document.getElementById('ID').showModal() method */}
+             <div className="flex  justify-end">
+<button className=" h-12 w-47 btn mt-1 text-white font-semibold   bg-green-500" onClick={()=>document.getElementById('my_modal_3').showModal()}>    <span class="text-white font-semibold text-2xl">+</span>Create New Problem</button>
+<dialog id="my_modal_3" className="modal">
+  <div className="modal-box">
+    <form method="dialog">
+      {/* if there is a button in form, it will close the modal */}
+      <button className="btn btn-sm btn-circle btn-ghost absolute right-2 font-extrabold top-2">✕</button>
+    </form>
+
+     <div>
+            <fieldset className="fieldset rounded py-4 mb-2">
               <legend className="fieldset-legend text-[14px] font-sans">
                 Problem Title
               </legend>
               <input
                 type="text"
-                className="input w-full px-3 py-3 border rounded"
-                placeholder="Enter problem title"
+                className="input w-full px-3 py-3 border rounded "
+                placeholder="Enter problem title" 
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
             </fieldset>
 
-            <fieldset className="fieldset w-full mb-4">
+            <fieldset className="fieldset w-full mb-2">
               <legend className="fieldset-legend text-[14px]">
                 Description
               </legend>
@@ -194,7 +218,18 @@ export default function Student() {
               />
             </fieldset>
 
-            <button
+           {/* select private or public  */}
+           <legend className="fieldset-legend text-[14px] font-sans mb-2">
+                Problem Type
+              </legend>
+<div className="flex gap-x-4 mb-4 ">
+<input type="radio" name="radio-7" class="radio radio-success " />
+ <span>Public</span>
+<input type="radio" name="radio-7" class="radio radio-success" />
+ <span>Private</span>
+</div>
+{/* Button section */}
+ <button
               onClick={handleSend}
               className="flex items-center justify-center gap-2 bg-green-500 w-full py-2 hover:bg-green-400 rounded-full text-white font-semibold transition duration-150"
             >
@@ -208,6 +243,72 @@ export default function Student() {
               </svg>
               Send
             </button>
+            </div>
+  </div>
+</dialog>
+</div>
+          </div>
+{/* my messages section */}
+           <div class=" my-7 card bg-base-100 w-[44vw] mx-auto  shadow-sm">
+  <div class="card-body">
+    <div className="flex gap-4 ">
+    <h2 class="card-title">Broken Classroom Projector</h2>
+    {/* private or public */}
+    <span className="badge bg-red-400 font-semibold text-white">Private</span>  
+            
+    </div>
+    <p className=" text-gray-700 font-sans m-2 line-clamp-2 ">The projector in Room 305 is not functioning properly. It flickers and sometimes shuts down during lectures, making it difficult for students to follow the class. Requesting maintenance as soon as possible.</p>
+    <div class="card-actions justify-end">
+      {/* approved or rejected status */}
+         {/* forward message  */}
+         <span className="badge bg-cyan-500 p-2 font-normal text-white">Chairman</span> 
+         {/* anyone solve message  */}
+      <span className="badge bg-green-500 p-2 font-normal text-white">Solved</span> 
+      {/* anyone reject message  */}
+      <span className="badge bg-red-500 p-2 font-normal text-white">Rejected</span>
+      {/* anyone not check message  */}
+      <span className="badge bg-yellow-500 p-2 font-normal text-white">Pending</span> 
+   
+
+  {/* Response */}
+
+
+  <div>
+
+
+
+  
+
+
+
+
+
+
+
+  </div>
+
+
+{/* Reject option */}
+<div>
+
+
+
+  </div>
+    </div>
+  </div>
+</div>
+  <div>
+
+
+
+  </div>
+
+
+
+
+
+
+
           </div>
         </div>
       </div>
