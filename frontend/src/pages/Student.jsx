@@ -3,6 +3,7 @@ import { fetchWithRefresh } from "../utils/fetchUtil.js"; // adjust path
 import { useNavigate } from "react-router";
 
 export default function Student() {
+  const [expanded, setExpanded] = useState(false);
   const [title, setTitle] = useState("");
   const [complainText, setComplainText] = useState("");
   const [complains, setComplains] = useState([]);
@@ -184,7 +185,7 @@ export default function Student() {
               {/* input section */}
              {/* You can open the modal using document.getElementById('ID').showModal() method */}
              <div className="flex  justify-end">
-<button className=" h-12 w-47 btn mt-1 text-white font-semibold   bg-green-500" onClick={()=>document.getElementById('my_modal_3').showModal()}>    <span class="text-white font-semibold text-2xl">+</span>Create New Problem</button>
+<button className=" mb-4 h-12 w-47 btn mt-1 text-white font-semibold   bg-green-500" onClick={()=>document.getElementById('my_modal_3').showModal()}>    <span class="text-white font-semibold text-2xl">+</span>Create New Problem</button>
 <dialog id="my_modal_3" className="modal">
   <div className="modal-box">
     <form method="dialog">
@@ -249,7 +250,7 @@ export default function Student() {
 </div>
           </div>
 {/* my messages section */}
-           <div class=" my-7 card bg-base-100 w-[44vw] mx-auto  shadow-sm">
+           <div class=" my-3 card bg-base-100 w-[44vw] mx-auto  shadow-sm">
   <div class="card-body">
     <div className="flex gap-4 ">
     <h2 class="card-title">Broken Classroom Projector</h2>
@@ -262,10 +263,8 @@ export default function Student() {
       {/* approved or rejected status */}
          {/* forward message  */}
          <span className="badge bg-cyan-500 p-2 font-normal text-white">Chairman</span> 
-         {/* anyone solve message  */}
-      <span className="badge bg-green-500 p-2 font-normal text-white">Solved</span> 
-      {/* anyone reject message  */}
-      <span className="badge bg-red-500 p-2 font-normal text-white">Rejected</span>
+         
+      
       {/* anyone not check message  */}
       <span className="badge bg-yellow-500 p-2 font-normal text-white">Pending</span> 
    
@@ -274,21 +273,10 @@ export default function Student() {
 
 
   <div>
+</div>
 
 
 
-  
-
-
-
-
-
-
-
-  </div>
-
-
-{/* Reject option */}
 <div>
 
 
@@ -297,11 +285,195 @@ export default function Student() {
     </div>
   </div>
 </div>
-  <div>
+
+{/* anyone solve message  */}
+             <div class=" my-3 card bg-base-100 w-[44vw] mx-auto  shadow-sm">
+  <div class="card-body">
+    <div className="flex gap-4 ">
+    <h2 class="card-title">Broken Classroom Projector</h2>
+    {/* private or public */}
+    <span className="badge bg-red-400 font-semibold text-white">Private</span>  
+            
+    </div>
+    <p className=" text-gray-700 font-sans m-2 line-clamp-2 ">The projector in Room 305 is not functioning properly. It flickers and sometimes shuts down during lectures, making it difficult for students to follow the class. Requesting maintenance as soon as possible.</p>
+    <div class="card-actions justify-end">
+      {/* approved status */}
+  {/* delete */}
+  <button class="btn bg-blue-500 hover:bg-blue-400 text-white font-semibold">Delete</button>  
+
+    <button className="btn bg-green-500 hover:bg-green-400 text-white" onClick={()=>document.getElementById('my_modal_4').showModal()}>Solved</button>
+<dialog id="my_modal_4" className="modal">
+  <div className="modal-box">
+    <form method="dialog">
+      {/* if there is a button in form, it will close the modal */}
+      <button className="btn btn-sm btn-circle btn-ghost absolute right-2 text-2xl top-2">✕</button>
+    </form>
+    {/* problem response */}
+
+    <div className="flex gap-4">
+    <h2 class="card-title">Broken Classroom Projector</h2>
+    <span className="badge font-semibold bg-red-400 text-white">Private</span>  
+    </div>
+   <div className="flex-1">
+
+    {/* paragraph */}
+   <p
+  className={`text-gray-700 font-sans m-1 ${!expanded ? "line-clamp-2" : ""}`}
+>
+  The projector in Room 305 is not functioning properly. It flickers and sometimes shuts down during lectures, making it difficult for students to follow the class. Requesting maintenance as soon as possible.
+</p>
+{/* see more function */}
+<button
+  className="text-blue-500 hover:underline m-2"
+  onClick={() => setExpanded(!expanded)}
+>
+  {expanded ? "See less" : "See more"}
+</button>
+</div>
+   
+   <div className=" gap-4">
+            
+      {/* selection dropdown */}
+
+ 
+
+     <div class="bg-blue-100 border border-blue-300 p-4 rounded-lg">
+    <h4 class="font-semibold text-gray-800 mb-1">Solution Comment</h4>
+    <p class="text-gray-700 leading-relaxed">
+      The projector cable was loose and overheated. It has been replaced with a
+      new HDMI cable and the cooling fan was cleaned. The projector is now working
+      properly without flickering.
+    </p>
+  </div>
+
+   {/* Timestamp  */}
+  <p class="text-right text-sm text-gray-600 mt-3">
+    Updated on: 12 Dec 2025
+  </p>
+</div>
+          
+
+            </div>
+
+
+</dialog>
+  
+
+
+   <div>
+</div>
+
+
+<div>
 
 
 
   </div>
+    </div>
+  </div>
+</div>     
+
+
+
+{/* anyone reject message  */}
+             <div class=" my-3 card bg-base-100 w-[44vw] mx-auto  shadow-sm">
+  <div class="card-body">
+    <div className="flex gap-4 ">
+    <h2 class="card-title">Broken Classroom Projector</h2>
+    {/* private or public */}
+    <span className="badge bg-red-400 font-semibold text-white">Private</span>  
+            
+    </div>
+    <p className=" text-gray-700 font-sans m-2 line-clamp-2 ">The projector in Room 305 is not functioning properly. It flickers and sometimes shuts down during lectures, making it difficult for students to follow the class. Requesting maintenance as soon as possible.</p>
+    <div class="card-actions justify-end">
+      {/* approved status */}
+  {/* delete */}
+  <button class="btn bg-blue-500 hover:bg-blue-400 text-white font-semibold">Delete</button>  
+
+    <button className="btn bg-red-500 hover:bg-red-400 text-white" onClick={()=>document.getElementById('my_modal_5').showModal()}>Rejected</button>
+<dialog id="my_modal_5" className="modal">
+  <div className="modal-box">
+    <form method="dialog">
+      {/* if there is a button in form, it will close the modal */}
+      <button className="btn btn-sm btn-circle btn-ghost absolute right-2 text-2xl top-2">✕</button>
+    </form>
+    {/* problem response */}
+
+    <div className="flex gap-4">
+    <h2 class="card-title">Broken Classroom Projector</h2>
+    <span className="badge font-semibold bg-red-400 text-white">Private</span>  
+    </div>
+   <div className="flex-1">
+
+    {/* paragraph */}
+   <p
+  className={`text-gray-700 font-sans m-1 ${!expanded ? "line-clamp-2" : ""}`}
+>
+  The projector in Room 305 is not functioning properly. It flickers and sometimes shuts down during lectures, making it difficult for students to follow the class. Requesting maintenance as soon as possible.
+</p>
+{/* see more function */}
+<button
+  className="text-blue-500 hover:underline m-2"
+  onClick={() => setExpanded(!expanded)}
+>
+  {expanded ? "See less" : "See more"}
+</button>
+</div>
+   
+   <div className=" gap-4">
+            
+      {/* selection dropdown */}
+
+ 
+
+     <div class="bg-blue-100 border border-blue-300 p-4 rounded-lg">
+    <h4 class="font-semibold text-gray-800 mb-1">Rejection Comment</h4>
+    <p class="text-gray-700 leading-relaxed">
+      The complaint was rejected due to missing proof or supporting details.
+    </p>
+  </div>
+
+   {/* Timestamp  */}
+  <p class="text-right text-sm text-gray-600 mt-3">
+    Updated on: 12 Dec 2025
+  </p>
+</div>
+          
+
+            </div>
+
+
+</dialog>
+
+
+   
+
+
+
+
+
+   
+
+
+
+
+  <div>
+</div>
+
+
+<div>
+
+
+
+  </div>
+    </div>
+  </div>
+</div>     
+
+ 
+
+  <div>
+</div>
 
 
 
