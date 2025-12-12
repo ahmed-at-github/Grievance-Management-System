@@ -73,6 +73,7 @@ export const getRefreshToken = async (req, res, next) => {
                 sameSite: 'Lax',
                 secure: true,
                 maxAge: 24 * 60 * 60 * 1000,
+                // maxAge: 10 * 1000
             })
             .json({ success: true, accessToken: accessToken });
     } catch (error) {

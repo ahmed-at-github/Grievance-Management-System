@@ -32,9 +32,9 @@ export const complainService = {
     getAllComplains: async (role) => {
         if (role == 'student') {
             const allComplain = await Complain.find(
-                {view: "public"},
-                { assignedTo: 0, studentId: 0 },
-            );
+                { view: 'public' },
+        
+            ).populate({ path: 'studentId', select: '_id' });
 
             return {
                 message: 'All Complain Successfully sent',
@@ -48,7 +48,7 @@ export const complainService = {
             role === 'decision committee'
         ) {
             const allComplain = await Complain.find({
-                view: "public"
+                view: 'public',
             }).populate('studentId');
 
             return {
@@ -78,8 +78,8 @@ export const complainService = {
                     studentId: userId,
                     view: 'private',
                 },
-                { studentId: 0},
-            ).populate({path: "assignedTo", select: "-email, -name"});
+                { studentId: 0 },
+            ).populate({ path: 'assignedTo', select: '-email, -name' });
 
             return {
                 message: 'All Complain Successfully sent',
@@ -87,13 +87,10 @@ export const complainService = {
             };
         }
 
-        if (
-            role === 'chairman' ||
-            role === 'decision committee'
-        ) {
+        if (role === 'chairman' || role === 'decision committee') {
             // Only fetches private complaints for this specific user
             const pvtComplains = await Complain.find({
-                assignedTo: userId,
+                assignedTo: user.role,
                 view: 'private',
             }).populate('studentId');
 
@@ -144,15 +141,15 @@ export const complainService = {
     },
 
     deleteComplain: async (id) => {
-    // findByIdAndDelete returns the document that was deleted
-    const deletedComplain = await Complain.findByIdAndDelete(id);
+        // findByIdAndDelete returns the document that was deleted
+        const deletedComplain = await Complain.findByIdAndDelete(id);
 
-    if (!deletedComplain) {
-        const error = new Error('Complain not found');
-        error.status = 404; // Or Constants.HTTP_STATUS.NOT_FOUND
-        throw error;
-    }
+        if (!deletedComplain) {
+            const error = new Error('Complain not found');
+            error.status = 404; // Or Constants.HTTP_STATUS.NOT_FOUND
+            throw error;
+        }
 
-    return { message: 'Complain deleted successfully' };
-}
+        return { message: 'Complain deleted successfully' };
+    },
 };

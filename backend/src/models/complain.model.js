@@ -33,8 +33,10 @@ const complainSchema = new mongoose.Schema(
             required: true,
         },
         assignedTo: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User', // chairman or committe
+              type: String,
+            enum: ['chairman', 'decision committee'],
+            default: 'decision committee',
+            required: true,
         },
         response: {
             type: String,

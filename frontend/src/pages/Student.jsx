@@ -3,47 +3,153 @@ import { fetchWithRefresh } from "../utils/fetchUtil.js"; // adjust path
 import { useNavigate } from "react-router";
 
 export default function Student() {
-  const [expanded, setExpanded] = useState(false);
+  const [user, setUser] = useState(null);
+
+  // Form State
   const [title, setTitle] = useState("");
   const [complainText, setComplainText] = useState("");
-  const [complains, setComplains] = useState([]);
+  const [viewType, setViewType] = useState("public");
+
+  // Data State
+  const [publicComplains, setPublicComplains] = useState([]); // All public complains from everyone
+  const [privateComplains, setPrivateComplains] = useState([]); // Only private complains from backend
+  const [myCombinedComplains, setMyCombinedComplains] = useState([]); // MERGED list (My Public + My Private)
+
+  // Modal & UI State
+  const [expanded, setExpanded] = useState(false);
+  const [selectedComplain, setSelectedComplain] = useState(null);
+
   const navigate = useNavigate();
 
-  // ===== Fetch all complains =====
-  const loadComplains = async () => {
+  // ===== API Calls =====
+
+  const loadPublicComplains = async () => {
     try {
       const res = await fetchWithRefresh(
         "http://localhost:4000/api/v1/complain/"
       );
       const response = await res.json();
-
-      // Sort by createdAt ascending (oldest first)
-      const sortedComplains = (response.data || []).sort(
+      const sorted = (response.data || []).sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
-
-      console.log(sortedComplains);
-
-      setComplains(sortedComplains);
+      setPublicComplains(sorted);
     } catch (err) {
-      console.error("Failed to fetch complains:", err);
+      console.error("Failed to fetch public complains:", err);
     }
   };
 
+  const loadPrivateComplains = async (userId) => {
+    try {
+      const res = await fetchWithRefresh(
+        `http://localhost:4000/api/v1/complain/${userId}`
+      );
+      const response = await res.json();
+      return response.data || [];
+    } catch (err) {
+      console.error("Failed to fetch private complains:", err);
+      return [];
+    }
+  };
+
+  // ===== Delete Function =====
+  const handleDelete = async (id, status) => {
+    if (status !== "resolved" && status !== "rejected") {
+      alert("You can only delete complaints that are resolved or rejected.");
+      return;
+    }
+
+    if (!window.confirm("Are you sure you want to delete this complaint?"))
+      return;
+
+    try {
+      const res = await fetchWithRefresh(
+        `http://localhost:4000/api/v1/complain/${id}`,
+        { method: "DELETE" }
+      );
+
+      const response = await res.json();
+
+      if (res.ok) {
+        alert("Complaint deleted successfully");
+        // Refresh Data
+        await refreshAllData();
+      } else {
+        alert(response.message || "Failed to delete complaint");
+      }
+    } catch (err) {
+      console.error("Error deleting complaint:", err);
+      alert("Failed to delete complaint");
+    }
+  };
+
+  // ===== Data Loading Logic =====
+
+  // 1. Fetch User & Public Data on Mount
   useEffect(() => {
-    const init = async () => {
-      await loadComplains();
+    const initData = async () => {
+      await loadPublicComplains();
+
+      try {
+        const res = await fetchWithRefresh("http://localhost:4000/api/v1/me");
+        const response = await res.json();
+        if (response.success) {
+          setUser(response.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user info", err);
+      }
     };
-    init();
+    initData();
   }, []);
 
-  // ===== Create complain (POST) =====
+  // 2. Merge Logic: Runs whenever User or Public Complains change
+  useEffect(() => {
+    const mergeMyComplains = async () => {
+      if (!user?._id) return;
+
+      // A. Fetch my private complains
+      const myPrivates = await loadPrivateComplains(user._id);
+      setPrivateComplains(myPrivates);
+console.log(user._id, publicComplains);
+
+      // B. Filter public complains to find MINE (assuming publicComplains has studentId populated or as ID)
+      console.log(publicComplains);
+      
+      const myPublics = publicComplains.filter((c) => {
+        // Handle case where studentId is an object (populated) or a string
+        const cStudentId = c.studentId?._id || c.studentId; 
+        return cStudentId === user._id;
+      });
+
+      // C. Merge and Sort
+      const combined = [...myPrivates, ...myPublics];
+      
+      // Remove duplicates just in case (e.g. if API returns overlaps)
+      const uniqueCombined = Array.from(new Map(combined.map(item => [item._id, item])).values());
+
+      uniqueCombined.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      setMyCombinedComplains(uniqueCombined);
+    };
+
+    mergeMyComplains();
+  }, [user, publicComplains]); // Re-run if user logs in or public feed updates
+
+  // Helper to refresh everything (used after delete/create)
+  const refreshAllData = async () => {
+    await loadPublicComplains();
+    // The useEffect [user, publicComplains] will trigger the private fetch and merge automatically
+  };
+
   const handleSend = async () => {
     if (!title || !complainText) return alert("Please fill all fields");
 
     const body = {
       title,
       complain: complainText,
+      view: viewType,
+      category: "other",
+      assignedTo: "decision committee",
     };
 
     try {
@@ -59,15 +165,16 @@ export default function Student() {
       const response = await res.json();
 
       if (!res.ok) {
-        console.log(res);
-
         alert(response.message || "Failed to submit complain");
         return;
       }
 
       setTitle("");
       setComplainText("");
-      loadComplains();
+      setViewType("public");
+      document.getElementById("my_modal_3").close();
+
+      await refreshAllData();
 
       alert("Complain submitted successfully!");
     } catch (err) {
@@ -77,16 +184,23 @@ export default function Student() {
   };
 
   const handleLogout = async () => {
-    const loginRes = await fetch("http://localhost:4000/api/v1/logout", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-    });
-    let msg = await loginRes.json();
-    console.log(msg);
+    try {
+      await fetch("http://localhost:4000/api/v1/logout", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+      localStorage.removeItem("accessToken");
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-    localStorage.removeItem("accessToken");
-    navigate("/");
+  const openDetailsModal = (complain) => {
+    setSelectedComplain(complain);
+    setExpanded(false);
+    document.getElementById("details_modal").showModal();
   };
 
   return (
@@ -100,41 +214,42 @@ export default function Student() {
         `}
       </style>
 
-      <div className="bg-green-200 h-[100vh] ">
-
- {/* NavBar Section */}
-     <div class="navbar bg-base-100 shadow-sm mb-8">
-        <div className="flex flex-wrap items-center gap-6">
-          <div className="flex items-center gap-4">
-            <img
-              className="h-20 w-20 rounded-full object-cover border-2 border-blue-200"
-              src="../src/assets/cartoon-illustration-scholar-academic_272293-4645.jpeg"
-            />
-            <h1 className="my-2 font-semibold text-xl">Student Panel</h1>
+      <div className="bg-green-200 h-[100vh]">
+        {/* NavBar Section */}
+        <div className="navbar bg-base-100 shadow-sm mb-8">
+          <div className="flex flex-wrap items-center gap-6 w-full px-4">
+            <div className="flex items-center gap-4">
+              <img
+                className="h-20 w-20 rounded-full object-cover border-2 border-blue-200"
+                src="../src/assets/cartoon-illustration-scholar-academic_272293-4645.jpeg"
+                alt="avatar"
+              />
+              <h1 className="my-2 font-semibold text-xl">Student Panel</h1>
+            </div>
+            <div className="flex-1 text-center">
+              <h1 className="text-3xl font-bold">Navbar</h1>
+            </div>
             <button className="btn btn-neutral" onClick={handleLogout}>
-              Logout{" "}
+              Logout
             </button>
           </div>
+        </div>
 
-          <div className="flex-1 text-center">
-            <h1 className="text-3xl font-bold">Navbar</h1>
-          </div>
-        </div>
-        </div>
-        
         <div className="m-2 flex justify-between gap-4">
-          {/* Left: Complains */}
+          {/* ================= LEFT: Public Feed (All Students) ================= */}
           <div className="">
-            <div className="card  bg-base-100 w-[49vw] shadow-sm h-[77vh] p-4 overflow-scroll">
+            <div className="card bg-base-100 w-[49vw] shadow-sm h-[77vh] p-4 overflow-scroll">
               <h2 className="text-2xl font-bold text-center">
                 📩 General Message Feed
               </h2>
 
-              {complains.length === 0 ? (
-                <p className="text-gray-500">No complains yet.</p>
+              {publicComplains.length === 0 ? (
+                <p className="text-gray-500 text-center mt-10">
+                  No public complains yet.
+                </p>
               ) : (
-                <div className="flex flex-col gap-4 max-h-[600px] overflow-y-auto">
-                  {complains.map((c) => (
+                <div className="flex flex-col gap-4 mt-4">
+                  {publicComplains.map((c) => (
                     <div
                       key={c._id}
                       className="border rounded-lg p-4 shadow hover:shadow-md transition duration-150"
@@ -143,21 +258,21 @@ export default function Student() {
                         <h4 className="font-bold text-lg">{c.title}</h4>
                         <span
                           className={`px-2 py-1 text-sm font-semibold rounded-full ${
-                            c.status === "pending"
-                              ? "bg-yellow-200 text-yellow-800"
-                              : c.status === "resolved"
+                            c.status === "resolved"
                               ? "bg-green-200 text-green-800"
-                              : "bg-gray-200 text-gray-800"
+                              : c.status === "rejected"
+                              ? "bg-red-200 text-red-800"
+                              : "bg-yellow-200 text-yellow-800"
                           }`}
                         >
                           {c.status}
                         </span>
                       </div>
-
                       <p className="text-gray-700 mb-2">{c.complain}</p>
-
                       <div className="flex justify-between text-sm text-gray-500">
-                        <span className="italic">{c.category}</span>
+                        <span className="italic badge badge-ghost">
+                          {c.category}
+                        </span>
                         <span>
                           {new Date(c.createdAt).toLocaleString([], {
                             dateStyle: "short",
@@ -172,315 +287,243 @@ export default function Student() {
             </div>
           </div>
 
-          {/* Right: Input */}
-          
-           <div className="card  bg-base-100 w-[49vw] shadow-sm h-[77vh] p-4 overflow-scroll">
-            <div className="flex justify-between gap-4">
-            <div>
-           <h2 className="text-2xl font-bold text-center">
-            🔒 My Messages
-              </h2>
-              </div>
-              
-              {/* input section */}
-             {/* You can open the modal using document.getElementById('ID').showModal() method */}
-             <div className="flex  justify-end">
-<button className=" mb-4 h-12 w-47 btn mt-1 text-white font-semibold   bg-green-500" onClick={()=>document.getElementById('my_modal_3').showModal()}>    <span class="text-white font-semibold text-2xl">+</span>Create New Problem</button>
-<dialog id="my_modal_3" className="modal">
-  <div className="modal-box">
-    <form method="dialog">
-      {/* if there is a button in form, it will close the modal */}
-      <button className="btn btn-sm btn-circle btn-ghost absolute right-2 font-extrabold top-2">✕</button>
-    </form>
+          {/* ================= RIGHT: My Messages (Public + Private) ================= */}
+          <div className="card bg-base-100 w-[49vw] shadow-sm h-[77vh] p-4 overflow-scroll">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">🔒 My Messages</h2>
 
-     <div>
-            <fieldset className="fieldset rounded py-4 mb-2">
-              <legend className="fieldset-legend text-[14px] font-sans">
-                Problem Title
-              </legend>
-              <input
-                type="text"
-                className="input w-full px-3 py-3 border rounded "
-                placeholder="Enter problem title" 
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-            </fieldset>
-
-            <fieldset className="fieldset w-full mb-2">
-              <legend className="fieldset-legend text-[14px]">
-                Description
-              </legend>
-              <textarea
-                className="input w-full px-3 py-4 rounded resize-none h-40"
-                placeholder="Describe your problem in detail"
-                value={complainText}
-                onChange={(e) => setComplainText(e.target.value)}
-              />
-            </fieldset>
-
-           {/* select private or public  */}
-           <legend className="fieldset-legend text-[14px] font-sans mb-2">
-                Problem Type
-              </legend>
-<div className="flex gap-x-4 mb-4 ">
-<input type="radio" name="radio-7" class="radio radio-success " />
- <span>Public</span>
-<input type="radio" name="radio-7" class="radio radio-success" />
- <span>Private</span>
-</div>
-{/* Button section */}
- <button
-              onClick={handleSend}
-              className="flex items-center justify-center gap-2 bg-green-500 w-full py-2 hover:bg-green-400 rounded-full text-white font-semibold transition duration-150"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                className="w-5 h-5"
+              <button
+                className="btn bg-green-500 hover:bg-green-400 text-white font-semibold"
+                onClick={() =>
+                  document.getElementById("my_modal_3").showModal()
+                }
               >
-                <path d="M3.4 20.4 22 12 3.4 3.6 3 10l12 2-12 2z" />
-              </svg>
-              Send
-            </button>
-            </div>
-  </div>
-</dialog>
-</div>
-          </div>
-{/* my messages section */}
-           <div class=" my-3 card bg-base-100 w-[44vw] mx-auto  shadow-sm">
-  <div class="card-body">
-    <div className="flex gap-4 ">
-    <h2 class="card-title">Broken Classroom Projector</h2>
-    {/* private or public */}
-    <span className="badge bg-red-400 font-semibold text-white">Private</span>  
-            
-    </div>
-    <p className=" text-gray-700 font-sans m-2 line-clamp-2 ">The projector in Room 305 is not functioning properly. It flickers and sometimes shuts down during lectures, making it difficult for students to follow the class. Requesting maintenance as soon as possible.</p>
-    <div class="card-actions justify-end">
-      {/* approved or rejected status */}
-         {/* forward message  */}
-         <span className="badge bg-cyan-500 p-2 font-normal text-white">Chairman</span> 
-         
-      
-      {/* anyone not check message  */}
-      <span className="badge bg-yellow-500 p-2 font-normal text-white">Pending</span> 
-   
-
-  {/* Response */}
-
-
-  <div>
-</div>
-
-
-
-<div>
-
-
-
-  </div>
-    </div>
-  </div>
-</div>
-
-{/* anyone solve message  */}
-             <div class=" my-3 card bg-base-100 w-[44vw] mx-auto  shadow-sm">
-  <div class="card-body">
-    <div className="flex gap-4 ">
-    <h2 class="card-title">Broken Classroom Projector</h2>
-    {/* private or public */}
-    <span className="badge bg-red-400 font-semibold text-white">Private</span>  
-            
-    </div>
-    <p className=" text-gray-700 font-sans m-2 line-clamp-2 ">The projector in Room 305 is not functioning properly. It flickers and sometimes shuts down during lectures, making it difficult for students to follow the class. Requesting maintenance as soon as possible.</p>
-    <div class="card-actions justify-end">
-      {/* approved status */}
-  {/* delete */}
-  <button class="btn bg-blue-500 hover:bg-blue-400 text-white font-semibold">Delete</button>  
-
-    <button className="btn bg-green-500 hover:bg-green-400 text-white" onClick={()=>document.getElementById('my_modal_4').showModal()}>Solved</button>
-<dialog id="my_modal_4" className="modal">
-  <div className="modal-box">
-    <form method="dialog">
-      {/* if there is a button in form, it will close the modal */}
-      <button className="btn btn-sm btn-circle btn-ghost absolute right-2 text-2xl top-2">✕</button>
-    </form>
-    {/* problem response */}
-
-    <div className="flex gap-4">
-    <h2 class="card-title">Broken Classroom Projector</h2>
-    <span className="badge font-semibold bg-red-400 text-white">Private</span>  
-    </div>
-   <div className="flex-1">
-
-    {/* paragraph */}
-   <p
-  className={`text-gray-700 font-sans m-1 ${!expanded ? "line-clamp-2" : ""}`}
->
-  The projector in Room 305 is not functioning properly. It flickers and sometimes shuts down during lectures, making it difficult for students to follow the class. Requesting maintenance as soon as possible.
-</p>
-{/* see more function */}
-<button
-  className="text-blue-500 hover:underline m-2"
-  onClick={() => setExpanded(!expanded)}
->
-  {expanded ? "See less" : "See more"}
-</button>
-</div>
-   
-   <div className=" gap-4">
-            
-      {/* selection dropdown */}
-
- 
-
-     <div class="bg-blue-100 border border-blue-300 p-4 rounded-lg">
-    <h4 class="font-semibold text-gray-800 mb-1">Solution Comment</h4>
-    <p class="text-gray-700 leading-relaxed">
-      The projector cable was loose and overheated. It has been replaced with a
-      new HDMI cable and the cooling fan was cleaned. The projector is now working
-      properly without flickering.
-    </p>
-  </div>
-
-   {/* Timestamp  */}
-  <p class="text-right text-sm text-gray-600 mt-3">
-    Updated on: 12 Dec 2025
-  </p>
-</div>
-          
-
+                <span className="text-2xl">+</span> Create New Problem
+              </button>
             </div>
 
+            {/* CREATE MODAL */}
+            <dialog id="my_modal_3" className="modal">
+              <div className="modal-box">
+                <form method="dialog">
+                  <button className="btn btn-sm btn-circle btn-ghost absolute right-2 font-extrabold top-2">
+                    ✕
+                  </button>
+                </form>
+                <div>
+                  <fieldset className="fieldset rounded py-4 mb-2">
+                    <legend className="fieldset-legend text-[14px] font-sans">
+                      Problem Title
+                    </legend>
+                    <input
+                      type="text"
+                      className="input w-full px-3 py-3 border rounded"
+                      placeholder="Enter problem title"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                    />
+                  </fieldset>
 
-</dialog>
-  
+                  <fieldset className="fieldset w-full mb-2">
+                    <legend className="fieldset-legend text-[14px]">
+                      Description
+                    </legend>
+                    <textarea
+                      className="input w-full px-3 py-4 rounded resize-none h-40"
+                      placeholder="Describe your problem in detail"
+                      value={complainText}
+                      onChange={(e) => setComplainText(e.target.value)}
+                    />
+                  </fieldset>
 
+                  <legend className="fieldset-legend text-[14px] font-sans mb-2">
+                    Visibility
+                  </legend>
+                  <div className="flex gap-x-6 mb-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="viewType"
+                        className="radio radio-success"
+                        checked={viewType === "public"}
+                        onChange={() => setViewType("public")}
+                      />
+                      <span>Public</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="viewType"
+                        className="radio radio-error"
+                        checked={viewType === "private"}
+                        onChange={() => setViewType("private")}
+                      />
+                      <span>Private</span>
+                    </label>
+                  </div>
 
-   <div>
-</div>
+                  <button
+                    onClick={handleSend}
+                    className="flex items-center justify-center gap-2 bg-green-500 w-full py-2 hover:bg-green-400 rounded-full text-white font-semibold transition duration-150"
+                  >
+                    Send
+                  </button>
+                </div>
+              </div>
+            </dialog>
 
+            {/* MY MESSAGES LIST (Combined) */}
+            <div className="flex flex-col gap-4">
+              {myCombinedComplains.length === 0 ? (
+                <p className="text-gray-500 text-center mt-10">
+                  You haven't posted any messages yet.
+                </p>
+              ) : (
+                myCombinedComplains.map((c) => (
+                  <div
+                    key={c._id}
+                    className="card bg-base-100 border shadow-sm"
+                  >
+                    <div className="card-body">
+                      {/* --- Header Section --- */}
+                      <div className="flex justify-between items-start">
+                        <h2 className="card-title text-lg w-2/3">{c.title}</h2>
 
-<div>
+                        {/* Right Side Badges Container */}
+                        <div className="flex flex-col items-end gap-2">
+                          
+                          {/* Row 1: Status Badge */}
+                          <span
+                            className={`px-2 py-1 text-sm font-semibold rounded-full ${
+                              c.status === "resolved"
+                                ? "bg-green-200 text-green-800"
+                                : c.status === "rejected"
+                                ? "bg-red-200 text-red-800"
+                                : "bg-yellow-200 text-yellow-800"
+                            }`}
+                          >
+                            {c.status}
+                          </span>
 
+                          
 
+                          {/* Row 2: Metadata Tags */}
+                          <div className="flex flex-wrap justify-end gap-1">
+                            {/* Assigned To Tag */}
+                            {c.assignedTo && (
+                              <span className="badge badge-sm h-auto bg-blue-100 text-blue-800 border-blue-200 capitalize">
+                                {c.assignedTo}
+                              </span>
+                            )}
+                             {/* Private/Public Tag */}
+                            <span className={`badge badge-sm font-semibold text-white border-none ${c.view === 'private' ? 'bg-red-400' : 'bg-green-400'}`}>
+                                {c.view === 'private' ? 'Private' : 'Public'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
 
-  </div>
-    </div>
-  </div>
-</div>     
+                      {/* --- Body --- */}
+                      <p className="text-gray-700 font-sans m-2 line-clamp-2">
+                        {c.complain}
+                      </p>
 
+                      {/* --- Footer / Actions --- */}
+                      <div className="card-actions justify-end items-center gap-2 mt-2">
+                        
+                        {/* DELETE BUTTON */}
+                        <button
+                          className={`btn text-white font-semibold btn-sm ${
+                            (c.status === 'resolved' || c.status === 'rejected')
+                              ? "bg-blue-500 hover:bg-blue-400"
+                              : "bg-gray-400 hover:bg-gray-400 cursor-not-allowed"
+                          }`}
+                          onClick={() => handleDelete(c._id, c.status)}
+                        >
+                          Delete
+                        </button>
 
-
-{/* anyone reject message  */}
-             <div class=" my-3 card bg-base-100 w-[44vw] mx-auto  shadow-sm">
-  <div class="card-body">
-    <div className="flex gap-4 ">
-    <h2 class="card-title">Broken Classroom Projector</h2>
-    {/* private or public */}
-    <span className="badge bg-red-400 font-semibold text-white">Private</span>  
-            
-    </div>
-    <p className=" text-gray-700 font-sans m-2 line-clamp-2 ">The projector in Room 305 is not functioning properly. It flickers and sometimes shuts down during lectures, making it difficult for students to follow the class. Requesting maintenance as soon as possible.</p>
-    <div class="card-actions justify-end">
-      {/* approved status */}
-  {/* delete */}
-  <button class="btn bg-blue-500 hover:bg-blue-400 text-white font-semibold">Delete</button>  
-
-    <button className="btn bg-red-500 hover:bg-red-400 text-white" onClick={()=>document.getElementById('my_modal_5').showModal()}>Rejected</button>
-<dialog id="my_modal_5" className="modal">
-  <div className="modal-box">
-    <form method="dialog">
-      {/* if there is a button in form, it will close the modal */}
-      <button className="btn btn-sm btn-circle btn-ghost absolute right-2 text-2xl top-2">✕</button>
-    </form>
-    {/* problem response */}
-
-    <div className="flex gap-4">
-    <h2 class="card-title">Broken Classroom Projector</h2>
-    <span className="badge font-semibold bg-red-400 text-white">Private</span>  
-    </div>
-   <div className="flex-1">
-
-    {/* paragraph */}
-   <p
-  className={`text-gray-700 font-sans m-1 ${!expanded ? "line-clamp-2" : ""}`}
->
-  The projector in Room 305 is not functioning properly. It flickers and sometimes shuts down during lectures, making it difficult for students to follow the class. Requesting maintenance as soon as possible.
-</p>
-{/* see more function */}
-<button
-  className="text-blue-500 hover:underline m-2"
-  onClick={() => setExpanded(!expanded)}
->
-  {expanded ? "See less" : "See more"}
-</button>
-</div>
-   
-   <div className=" gap-4">
-            
-      {/* selection dropdown */}
-
- 
-
-     <div class="bg-blue-100 border border-blue-300 p-4 rounded-lg">
-    <h4 class="font-semibold text-gray-800 mb-1">Rejection Comment</h4>
-    <p class="text-gray-700 leading-relaxed">
-      The complaint was rejected due to missing proof or supporting details.
-    </p>
-  </div>
-
-   {/* Timestamp  */}
-  <p class="text-right text-sm text-gray-600 mt-3">
-    Updated on: 12 Dec 2025
-  </p>
-</div>
-          
-
+                        {/* VIEW RESPONSE BUTTON */}
+                        {(c.status === "resolved" ||
+                          c.status === "rejected") && (
+                          <button
+                            className="btn btn-sm btn-outline border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-black"
+                            onClick={() => openDetailsModal(c)}
+                          >
+                            View Response
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
+            {/* SHARED DETAILS MODAL */}
+            <dialog id="details_modal" className="modal">
+              <div className="modal-box">
+                <form method="dialog">
+                  <button className="btn btn-sm btn-circle btn-ghost absolute right-2 text-2xl top-2">
+                    ✕
+                  </button>
+                </form>
 
-</dialog>
+                {selectedComplain && (
+                  <>
+                    <div className="flex gap-4 mb-2">
+                      <h2 className="card-title">{selectedComplain.title}</h2>
+                      <span className={`badge font-semibold text-white ${selectedComplain.view === 'private' ? 'bg-red-400' : 'bg-green-400'}`}>
+                        {selectedComplain.view === 'private' ? 'Private' : 'Public'}
+                      </span>
+                    </div>
 
+                    <div className="flex-1">
+                      <p
+                        className={`text-gray-700 font-sans m-1 ${
+                          !expanded ? "line-clamp-2" : ""
+                        }`}
+                      >
+                        {selectedComplain.complain}
+                      </p>
+                      <button
+                        className="text-blue-500 hover:underline m-2 text-sm"
+                        onClick={() => setExpanded(!expanded)}
+                      >
+                        {expanded ? "See less" : "See more"}
+                      </button>
+                    </div>
 
-   
+                    <div className="mt-4">
+                      <div
+                        className={`border p-4 rounded-lg ${
+                          selectedComplain.status === "rejected"
+                            ? "bg-red-50 border-red-300"
+                            : "bg-green-50 border-green-300"
+                        }`}
+                      >
+                        <h4 className="font-semibold text-gray-800 mb-1">
+                          {selectedComplain.status === "rejected"
+                            ? "Rejection Reason"
+                            : "Solution Comment"}
+                        </h4>
+                        <p className="text-gray-700 leading-relaxed">
+                          {selectedComplain.response ||
+                            "No additional comments provided by admin."}
+                        </p>
+                      </div>
 
-
-
-
-
-   
-
-
-
-
-  <div>
-</div>
-
-
-<div>
-
-
-
-  </div>
-    </div>
-  </div>
-</div>     
-
- 
-
-  <div>
-</div>
-
-
-
-
-
-
-
+                      <p className="text-right text-sm text-gray-600 mt-3">
+                        Updated on:{" "}
+                        {new Date(
+                          selectedComplain.updatedAt
+                        ).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </dialog>
           </div>
         </div>
       </div>

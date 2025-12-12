@@ -57,6 +57,8 @@ const Login = () => {
         navigate("/student");
       } else if (meData.data.role === "chairman") {
         navigate("/chairman");
+      }else if (meData.data.role === "decision committee") {
+        navigate("/decision");
       }
     } catch (err) {
       console.error(err);
