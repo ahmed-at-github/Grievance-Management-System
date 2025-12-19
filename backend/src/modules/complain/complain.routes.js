@@ -28,7 +28,7 @@ router.get(
 
 // patch /:id add tag, assign, reply, comment authenticate role: chairman, dec comm
 router.patch('/:id' , verifyAccessToken,
-    authorizeRole(['chairman', 'decision committee']), complainController.editComplain)
+    authorizeRole(['chairman', 'decision committee', 'student']), complainController.editComplain)
 
 router.delete('/:id', verifyAccessToken, authorizeRole(['student']), complainController.deleteComplain) //only studnet 
 

@@ -43,60 +43,61 @@ export default function Decision() {
   }, []);
 
   // 2. Unified Load Function (Public + Private Merge)
-  const loadComplains = async (userId) => {
-    setLoading(true);
-    try {
-      // Step 1: Fetch Public Complains
-      const publicRes = await fetchWithRefresh(
-        "http://localhost:4000/api/v1/complain/"
-      );
-      const publicJson = await publicRes.json();
-      let combinedData = publicJson.data || [];
+const loadComplains = async (userId) => {
+  setLoading(true);
+  try {
+    // Step 1: Fetch Public Complains
+    const publicRes = await fetchWithRefresh(
+      "http://localhost:4000/api/v1/complain/"
+    );
+    const publicJson = await publicRes.json();
 
-      // Step 2: Fetch Private Complains (Only if we have a User ID)
-      if (userId) {
-        try {
-          const privateRes = await fetchWithRefresh(
-            `http://localhost:4000/api/v1/complain/${userId}`
-          );
-          const privateJson = await privateRes.json();
-          const privateData = privateJson.data || [];
+    // ✅ FILTER: only chairman public complains
+    let combinedData = (publicJson.data || []).filter(
+      (c) => c.assignedTo === "decision committee"
+    );
 
-          // Merge arrays
-          combinedData = [...combinedData, ...privateData];
-          console.log(privateJson);
-        } catch (privateErr) {
-          console.error("Failed to fetch private complains", privateErr);
-        }
+    // Step 2: Fetch Private Complains (Only if we have a User ID)
+    if (userId) {
+      try {
+        const privateRes = await fetchWithRefresh(
+          `http://localhost:4000/api/v1/complain/${userId}`
+        );
+        const privateJson = await privateRes.json();
+        const privateData = privateJson.data || [];
+
+        // Merge arrays
+        combinedData = [...combinedData, ...privateData];
+      } catch (privateErr) {
+        console.error("Failed to fetch private complains", privateErr);
       }
-
-      // Step 3: Deduplicate (Optional, safety check if API returns overlaps)
-      // combinedData = combinedData.filter((v,i,a)=>a.findIndex(v2=>(v2._id===v._id))===i);
-
-      // Step 4: Sort by Date (Newest First)
-      combinedData.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      );
-
-      setComplains(combinedData);
-    } catch (err) {
-      console.error("Failed to fetch complains:", err);
-    } finally {
-      setLoading(false);
     }
-  };
+
+    setComplains(combinedData);
+  } catch (err) {
+    console.error("Failed to fetch complains", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // 3. Handle Updates (Solve, Reject, Forward)
   const handleUpdateStatus = async (newStatus) => {
     if (!selectedComplain) return;
 
+    const roleToAssign = forwardRole || (user ? user.role : undefined);
+
+    // 2. Construct body using spread syntax
     const body = {
       status: newStatus,
-      response: responseText,
-      assignedTo: forwardRole || (user ? user.role : undefined),
+      ...(responseText && { response: responseText }), // Only adds 'response' key if responseText exists
+      ...(roleToAssign && { assignedTo: roleToAssign }), // Only adds 'assignedTo' key if a role exists
     };
 
     try {
+      console.log(body);
+
       const res = await fetchWithRefresh(
         `http://localhost:4000/api/v1/complain/${selectedComplain._id}`,
         {
@@ -411,14 +412,14 @@ export default function Decision() {
                   onChange={(e) => setForwardRole(e.target.value)}
                 >
                   <option value="">-- Select Role --</option>
-                  <option value="Chairman">Chairman</option>
-                  <option value="Deen">Deen</option>
-                  <option value="VC">VC</option>
+                  <option value="chairman">Chairman</option>
+                  <option value="deen">Deen</option>
+                  <option value="vc">VC</option>
                 </select>
               </div>
 
               <button
-                onClick={() => handleUpdateStatus("approved")}
+                onClick={() => handleUpdateStatus("pending")}
                 className="flex items-center justify-center gap-2 bg-cyan-600 w-full py-2 hover:bg-cyan-500 rounded-full text-white font-semibold"
               >
                 Forward Complaint

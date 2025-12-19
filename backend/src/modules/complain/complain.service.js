@@ -31,10 +31,9 @@ export const complainService = {
     },
     getAllComplains: async (role) => {
         if (role == 'student') {
-            const allComplain = await Complain.find(
-                { view: 'public' },
-        
-            ).populate({ path: 'studentId', select: '_id' });
+            const allComplain = await Complain.find({
+                view: 'public',
+            }).populate({ path: 'studentId', select: '_id' });
 
             return {
                 message: 'All Complain Successfully sent',
@@ -63,9 +62,9 @@ export const complainService = {
     },
 
     getAllPvtComplains: async (role, userId) => {
-        const user = User.findById(userId);
+        const user = await User.findById(userId);
 
-        if (!user || user.role === role) {
+        if (!user || user.role !== role) {
             const err = new Error('Error User not found');
             err.statusCode = 404;
             throw err;
@@ -76,7 +75,6 @@ export const complainService = {
             const pvtComplains = await Complain.find(
                 {
                     studentId: userId,
-                    view: 'private',
                 },
                 { studentId: 0 },
             ).populate({ path: 'assignedTo', select: '-email, -name' });
@@ -105,9 +103,10 @@ export const complainService = {
         throw err;
     },
 
-    editComplain: async (body, id) => {
+    editComplain: async (body, id, user) => {
         const complaint = await Complain.findById(id);
 
+        // 1. Global Check: Cannot edit if resolved/rejected (applies to everyone)
         if (
             complaint.status === 'resolved' ||
             complaint.status === 'rejected'
@@ -119,25 +118,39 @@ export const complainService = {
             throw err;
         }
 
-        const updateComplain = await Complain.findByIdAndUpdate(
-            id,
-            { $set: body }, // <-- Uses frontend body
-            { new: true, runValidators: true }, // Apply validations!
-        );
-        //assigned to is ref to user
+        // 2. Logic: Student Role + Pending State + specific fields
+        const updateData = { ...body }; // Create a copy of the body
 
-        if (!updateComplain) {
-            const err = new Error(
-                'Error updating Complain. Complain maybe not found',
+       
+            // A. Check Status
+            if (complaint.status !== 'pending' && user.role === 'student') {
+                const err = new Error(
+                    'Students can only edit complaints while they are pending.',
+                );
+                err.statusCode = 400; // or 403 Forbidden
+                throw err;
+            }
+
+            // 3. Perform Update
+            const updateComplain = await Complain.findByIdAndUpdate(
+                id,
+                { $set: updateData },
+                { new: true, runValidators: true },
             );
-            err.statusCode = 400;
-            throw err;
-        }
 
-        return {
-            message: 'Complain updated Successfully',
-            updateComplain,
-        };
+            if (!updateComplain) {
+                const err = new Error('Error updating Complain.');
+                err.statusCode = 400;
+                throw err;
+            }
+
+            return {
+                message: 'Complain updated Successfully',
+                updateComplain,
+            };
+        
+
+        
     },
 
     deleteComplain: async (id) => {

@@ -9,11 +9,14 @@ export default function Student() {
   const [title, setTitle] = useState("");
   const [complainText, setComplainText] = useState("");
   const [viewType, setViewType] = useState("public");
+  
+  // Edit State (New)
+  const [editingId, setEditingId] = useState(null); // If null, we are creating. If set, we are editing.
 
   // Data State
-  const [publicComplains, setPublicComplains] = useState([]); // All public complains from everyone
-  const [privateComplains, setPrivateComplains] = useState([]); // Only private complains from backend
-  const [myCombinedComplains, setMyCombinedComplains] = useState([]); // MERGED list (My Public + My Private)
+  const [publicComplains, setPublicComplains] = useState([]);
+  const [privateComplains, setPrivateComplains] = useState([]);
+  const [myCombinedComplains, setMyCombinedComplains] = useState([]);
 
   // Modal & UI State
   const [expanded, setExpanded] = useState(false);
@@ -71,7 +74,6 @@ export default function Student() {
 
       if (res.ok) {
         alert("Complaint deleted successfully");
-        // Refresh Data
         await refreshAllData();
       } else {
         alert(response.message || "Failed to delete complaint");
@@ -84,7 +86,6 @@ export default function Student() {
 
   // ===== Data Loading Logic =====
 
-  // 1. Fetch User & Public Data on Mount
   useEffect(() => {
     const initData = async () => {
       await loadPublicComplains();
@@ -102,29 +103,19 @@ export default function Student() {
     initData();
   }, []);
 
-  // 2. Merge Logic: Runs whenever User or Public Complains change
   useEffect(() => {
     const mergeMyComplains = async () => {
       if (!user?._id) return;
 
-      // A. Fetch my private complains
       const myPrivates = await loadPrivateComplains(user._id);
       setPrivateComplains(myPrivates);
-console.log(user._id, publicComplains);
 
-      // B. Filter public complains to find MINE (assuming publicComplains has studentId populated or as ID)
-      console.log(publicComplains);
-      
       const myPublics = publicComplains.filter((c) => {
-        // Handle case where studentId is an object (populated) or a string
         const cStudentId = c.studentId?._id || c.studentId; 
         return cStudentId === user._id;
       });
 
-      // C. Merge and Sort
       const combined = [...myPrivates, ...myPublics];
-      
-      // Remove duplicates just in case (e.g. if API returns overlaps)
       const uniqueCombined = Array.from(new Map(combined.map(item => [item._id, item])).values());
 
       uniqueCombined.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -133,53 +124,95 @@ console.log(user._id, publicComplains);
     };
 
     mergeMyComplains();
-  }, [user, publicComplains]); // Re-run if user logs in or public feed updates
+  }, [user, publicComplains]);
 
-  // Helper to refresh everything (used after delete/create)
   const refreshAllData = async () => {
     await loadPublicComplains();
-    // The useEffect [user, publicComplains] will trigger the private fetch and merge automatically
   };
 
-  const handleSend = async () => {
+  // ===== Form Handlers (Create & Edit) =====
+
+  // 1. Reset Form Helper
+  const resetForm = () => {
+    setTitle("");
+    setComplainText("");
+    setViewType("public");
+    setEditingId(null);
+  };
+
+  // 2. Open Modal for Create
+  const openCreateModal = () => {
+    resetForm();
+    document.getElementById("my_modal_3").showModal();
+  };
+
+  // 3. Open Modal for Edit
+  const openEditModal = (complain) => {
+    setEditingId(complain._id);
+    setTitle(complain.title);
+    setComplainText(complain.complain);
+    setViewType(complain.view); // Set strictly for UI state, though we won't send it in PATCH
+    document.getElementById("my_modal_3").showModal();
+  };
+
+  // 4. Close Modal Wrapper
+  const closeModal = () => {
+    document.getElementById("my_modal_3").close();
+    resetForm();
+  };
+
+  // 5. Unified Submit Handler
+  const handleSubmit = async () => {
     if (!title || !complainText) return alert("Please fill all fields");
 
-    const body = {
-      title,
-      complain: complainText,
-      view: viewType,
-      category: "other",
-      assignedTo: "decision committee",
-    };
-
     try {
-      const res = await fetchWithRefresh(
-        "http://localhost:4000/api/v1/complain/create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        }
-      );
+      let url = "";
+      let method = "";
+      let body = {};
+
+      if (editingId) {
+        // --- EDIT MODE (PATCH) ---
+        url = `http://localhost:4000/api/v1/complain/${editingId}`;
+        method = "PATCH";
+        // Only sending title and body as requested
+        body = {
+          title,
+          complain: complainText,
+        };
+      } else {
+        // --- CREATE MODE (POST) ---
+        url = "http://localhost:4000/api/v1/complain/create";
+        method = "POST";
+        body = {
+          title,
+          complain: complainText,
+          view: viewType,
+          category: "other",
+          assignedTo: "decision committee",
+        };
+      }
+
+      const res = await fetchWithRefresh(url, {
+        method: method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
 
       const response = await res.json();
 
       if (!res.ok) {
-        alert(response.message || "Failed to submit complain");
+        alert(response.message || "Operation failed");
         return;
       }
 
-      setTitle("");
-      setComplainText("");
-      setViewType("public");
-      document.getElementById("my_modal_3").close();
+      closeModal(); // Close and reset form
+      await refreshAllData(); // Refresh list
 
-      await refreshAllData();
+      alert(editingId ? "Complaint updated successfully!" : "Complaint submitted successfully!");
 
-      alert("Complain submitted successfully!");
     } catch (err) {
-      console.error("Error sending complain:", err);
-      alert("Failed to send complain");
+      console.error("Error submitting form:", err);
+      alert("Failed to submit");
     }
   };
 
@@ -294,23 +327,28 @@ console.log(user._id, publicComplains);
 
               <button
                 className="btn bg-green-500 hover:bg-green-400 text-white font-semibold"
-                onClick={() =>
-                  document.getElementById("my_modal_3").showModal()
-                }
+                onClick={openCreateModal} // Changed to custom handler
               >
                 <span className="text-2xl">+</span> Create New Problem
               </button>
             </div>
 
-            {/* CREATE MODAL */}
+            {/* CREATE / EDIT MODAL */}
             <dialog id="my_modal_3" className="modal">
               <div className="modal-box">
-                <form method="dialog">
-                  <button className="btn btn-sm btn-circle btn-ghost absolute right-2 font-extrabold top-2">
-                    ✕
-                  </button>
-                </form>
+                {/* Manual Close Button to ensure state reset */}
+                <button 
+                  onClick={closeModal}
+                  className="btn btn-sm btn-circle btn-ghost absolute right-2 font-extrabold top-2"
+                >
+                  ✕
+                </button>
+                
                 <div>
+                  <h3 className="font-bold text-lg mb-4">
+                    {editingId ? "Edit Problem" : "Create New Problem"}
+                  </h3>
+
                   <fieldset className="fieldset rounded py-4 mb-2">
                     <legend className="fieldset-legend text-[14px] font-sans">
                       Problem Title
@@ -336,37 +374,42 @@ console.log(user._id, publicComplains);
                     />
                   </fieldset>
 
-                  <legend className="fieldset-legend text-[14px] font-sans mb-2">
-                    Visibility
-                  </legend>
-                  <div className="flex gap-x-6 mb-4">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="viewType"
-                        className="radio radio-success"
-                        checked={viewType === "public"}
-                        onChange={() => setViewType("public")}
-                      />
-                      <span>Public</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="viewType"
-                        className="radio radio-error"
-                        checked={viewType === "private"}
-                        onChange={() => setViewType("private")}
-                      />
-                      <span>Private</span>
-                    </label>
-                  </div>
+                  {/* Hide Visibility Option during Edit */}
+                  {!editingId && (
+                    <>
+                      <legend className="fieldset-legend text-[14px] font-sans mb-2">
+                        Visibility
+                      </legend>
+                      <div className="flex gap-x-6 mb-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="viewType"
+                            className="radio radio-success"
+                            checked={viewType === "public"}
+                            onChange={() => setViewType("public")}
+                          />
+                          <span>Public</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="viewType"
+                            className="radio radio-error"
+                            checked={viewType === "private"}
+                            onChange={() => setViewType("private")}
+                          />
+                          <span>Private</span>
+                        </label>
+                      </div>
+                    </>
+                  )}
 
                   <button
-                    onClick={handleSend}
+                    onClick={handleSubmit} // Using unified handler
                     className="flex items-center justify-center gap-2 bg-green-500 w-full py-2 hover:bg-green-400 rounded-full text-white font-semibold transition duration-150"
                   >
-                    Send
+                    {editingId ? "Update" : "Send"}
                   </button>
                 </div>
               </div>
@@ -405,8 +448,6 @@ console.log(user._id, publicComplains);
                             {c.status}
                           </span>
 
-                          
-
                           {/* Row 2: Metadata Tags */}
                           <div className="flex flex-wrap justify-end gap-1">
                             {/* Assigned To Tag */}
@@ -431,6 +472,16 @@ console.log(user._id, publicComplains);
                       {/* --- Footer / Actions --- */}
                       <div className="card-actions justify-end items-center gap-2 mt-2">
                         
+                        {/* EDIT BUTTON (Only if Pending) */}
+                        {c.status === "pending" && (
+                           <button
+                             className="btn text-white font-semibold btn-sm bg-orange-400 hover:bg-orange-300"
+                             onClick={() => openEditModal(c)}
+                           >
+                             Edit
+                           </button>
+                        )}
+
                         {/* DELETE BUTTON */}
                         <button
                           className={`btn text-white font-semibold btn-sm ${
@@ -460,7 +511,7 @@ console.log(user._id, publicComplains);
               )}
             </div>
 
-            {/* SHARED DETAILS MODAL */}
+            {/* SHARED DETAILS MODAL (Read Only) */}
             <dialog id="details_modal" className="modal">
               <div className="modal-box">
                 <form method="dialog">

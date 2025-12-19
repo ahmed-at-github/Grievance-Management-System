@@ -77,6 +77,7 @@ export async function editComplain(req, res, next) {
     try {
         const id = req.params.id;
         const body = req.body;
+        const user = req.user;
 
         const { error, value } = CompalainEditValidator.validate(body, {
             abortEarly: false,
@@ -91,6 +92,7 @@ export async function editComplain(req, res, next) {
         const { message, updateComplain } = await complainService.editComplain(
             value,
             id,
+            user,
         );
 
         return res
