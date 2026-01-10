@@ -1,0 +1,108 @@
+import User from '../../models/user.model.js';
+import { sendMail } from '../../utils/email.js';
+import { generatePass } from '../../utils/generate-password.js';
+import { comparePassword, hashPassword } from '../../utils/bcrypt.js';
+import jwt from 'jsonwebtoken';
+
+export const authService = {
+    getUserById: async (id) => {
+        console.log(id);
+
+        const user = await User.findById(id);
+
+        if (!user) {
+            const err = new Error('User not found');
+            err.statusCode = 404;
+            throw err;
+        }
+
+        return user.toJSON();
+    },
+
+    createUser: async (body) => {
+        const duplicate = await User.findOne({
+            email: body.email,
+        });
+        if (duplicate) {
+            const err = new Error('User alreday exist');
+            err.statusCode = 409;
+            throw err;
+        }
+
+        if (body.role === 'chairman' || body.role === 'decision committee') {
+            const roleExists = await User.findOne({
+                $or: [{ role: 'chairman' }, { role: 'decision committee' }],
+            });
+
+            if (roleExists) {
+                const err = new Error(
+                    `A ${body.role} already exists. Cannot create another ${body.role}.`,
+                );
+                err.statusCode = 400; // Bad request
+                throw err;
+            }
+        }
+
+        const customPassword = generatePass();
+        await sendMail(body.email, customPassword);
+        
+        
+        const hashPass = await hashPassword(customPassword);
+        body.password = hashPass;
+
+        const user = await User.create(body);
+
+        return user.toJSON();
+    },
+
+    loginUser: async (body) => {
+        const foundUser = await User.findOne({ email: body.email });
+
+        if (!foundUser) {
+            const err = new Error('user not found');
+            err.statusCode = 404;
+            throw err;
+        }
+
+        const match = await comparePassword(body.password, foundUser.password);
+        if (!match) {
+            const err = new Error('password wrong');
+            err.statusCode = 401;
+            throw err;
+        }
+
+        //make custom func
+        const accessToken = jwt.sign(
+            { id: foundUser._id, role: foundUser.role },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: '15m' },
+        );
+
+        const refreshToken = jwt.sign(
+            { id: foundUser._id, role: foundUser.role },
+            process.env.REFRESH_TOKEN_SECRET,
+            { expiresIn: '1d' },
+        );
+
+        return { accessToken, refreshToken };
+    },
+
+    generateToken: (body) => {
+        console.log(body);
+
+        //make custom func
+        const accessToken = jwt.sign(
+            { id: body.id, role: body.role },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: '15m' },
+        );
+
+        const refreshToken = jwt.sign(
+            { id: body.id, role: body.role },
+            process.env.REFRESH_TOKEN_SECRET,
+            { expiresIn: '1d' },
+        );
+
+        return { accessToken, refreshToken };
+    },
+};

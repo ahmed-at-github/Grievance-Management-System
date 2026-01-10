@@ -1,0 +1,50 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import compression from 'compression';
+import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
+import {
+    morganMiddleware,
+    notFoundHandler,
+    errorHandler,
+} from './middlewares/index.js';
+import router from './modules/routes/index.js';
+
+const app = express();
+
+// Logging
+app.use(morganMiddleware);
+
+// Security
+app.use(helmet());
+app.use(compression());
+// app.use(
+//     rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true }),
+// );
+
+// CORS
+app.use(
+    cors({
+        origin:"http://localhost:5173", // your frontend
+        credentials: true, // allow cookies
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+    }),
+);
+
+// Body Parsing
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// // middleware for cookies
+app.use(cookieParser());
+
+// Routes
+app.use('/api/v1', router);
+
+// Error Handling
+app.use(notFoundHandler);
+app.use(errorHandler);
+
+export default app;
