@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaGavel } from "react-icons/fa";
+import { FaGavel, FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
@@ -68,34 +69,34 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-100 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-100 flex items-center justify-center px-4 sm:px-6 py-6 sm:py-8">
       {/* Decorative background elements */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse"></div>
+      <div className="absolute top-0 left-0 w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse"></div>
+      <div className="absolute bottom-0 right-0 w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse"></div>
 
-      <div className="relative w-full max-w-md">
+      <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md">
         {/* Main Container - Glassmorphism */}
-        <div className="backdrop-blur-xl bg-white/30 rounded-3xl shadow-2xl border border-white/40 p-10">
+        <div className="backdrop-blur-xl bg-white/30 rounded-2xl sm:rounded-3xl shadow-2xl border border-white/40 p-6 sm:p-8 md:p-10">
           
           {/* Header */}
-          <div className="text-center mb-10">
-            <div className="inline-block p-4 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-2xl shadow-lg mb-6 transform hover:scale-110 transition-transform duration-300">
-              <FaGavel className="text-white text-3xl" />
+          <div className="text-center mb-6 sm:mb-8 md:mb-10">
+            <div className="inline-block p-3 sm:p-4 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg sm:rounded-2xl shadow-lg mb-4 sm:mb-6 transform hover:scale-110 transition-transform duration-300">
+              <FaGavel className="text-white text-xl sm:text-2xl md:text-3xl" />
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-1 sm:mb-2">
               Grievance Portal
             </h1>
-            <p className="text-gray-600 text-sm">Secure access to your grievance management system</p>
+            <p className="text-gray-600 text-xs sm:text-sm md:text-sm">Secure access to your grievance management system</p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 md:space-y-6">
             {/* Email Field */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3">Email Address</label>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">Email Address</label>
               <input
                 type="email"
-                className="w-full px-5 py-3 bg-white/50 border-2 border-cyan-200/50 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:border-cyan-400 focus:bg-white/80 transition-all duration-200 backdrop-blur-sm"
+                className="w-full px-4 sm:px-5 py-2.5 sm:py-3 bg-white/50 border-2 border-cyan-200/50 rounded-lg sm:rounded-xl placeholder-gray-400 text-gray-900 text-sm sm:text-base focus:outline-none focus:border-cyan-400 focus:bg-white/80 transition-all duration-200 backdrop-blur-sm"
                 placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -105,20 +106,29 @@ const Login = () => {
 
             {/* Password Field */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3">Password</label>
-              <input
-                type="password"
-                className="w-full px-5 py-3 bg-white/50 border-2 border-cyan-200/50 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:border-cyan-400 focus:bg-white/80 transition-all duration-200 backdrop-blur-sm"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="w-full px-4 sm:px-5 py-2.5 sm:py-3 bg-white/50 border-2 border-cyan-200/50 rounded-lg sm:rounded-xl placeholder-gray-400 text-gray-900 text-sm sm:text-base focus:outline-none focus:border-cyan-400 focus:bg-white/80 transition-all duration-200 backdrop-blur-sm pr-12"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  {showPassword ? <FaEyeSlash className="text-sm sm:text-base" /> : <FaEye className="text-sm sm:text-base" />}
+                </button>
+              </div>
             </div>
 
             {/* Error Message */}
             {message && (
-              <div className="p-4 bg-red-100/60 backdrop-blur-sm border-2 border-red-300 rounded-xl text-red-700 text-sm font-medium">
+              <div className="p-3 sm:p-4 bg-red-100/60 backdrop-blur-sm border-2 border-red-300 rounded-lg sm:rounded-xl text-red-700 text-xs sm:text-sm font-medium">
                 {message}
               </div>
             )}
@@ -126,21 +136,21 @@ const Login = () => {
             {/* Login Button */}
             <button
               type="submit"
-              className="w-full py-3 px-5 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-2xl transition-all duration-200 transform hover:scale-105 active:scale-95"
+              className="w-full py-2.5 sm:py-3 px-4 sm:px-5 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold text-sm sm:text-base rounded-lg sm:rounded-xl shadow-lg hover:shadow-2xl transition-all duration-200 transform hover:scale-105 active:scale-95"
             >
               Sign In
             </button>
           </form>
 
           {/* Divider */}
-          <div className="my-8 flex items-center gap-4">
+          <div className="my-6 sm:my-7 md:my-8 flex items-center gap-4">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent to-cyan-300"></div>
             <div className="flex-1 h-px bg-gradient-to-l from-transparent to-cyan-300"></div>
           </div>
         </div>
 
         {/* Footer Text */}
-        <p className="text-center text-gray-600 text-xs mt-8">
+        <p className="text-center text-gray-600 text-xs sm:text-xs mt-6 sm:mt-8">
           By signing in, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>

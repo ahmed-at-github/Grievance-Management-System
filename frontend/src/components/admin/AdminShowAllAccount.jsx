@@ -81,20 +81,20 @@ const AdminShowAllAccount = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-gray-50 py-6 sm:py-8 md:py-12">
       {/* Page Title Section */}
-      <div className="bg-indigo-50 border-b border-gray-100 mb-8">
-        <div className="max-w-7xl mx-auto px-8 py-8">
-          <h2 className="text-3xl font-bold text-gray-900">All Accounts</h2>
-          <p className="text-gray-600 text-sm mt-1">Manage student and staff accounts</p>
+      <div className="bg-indigo-50 border-b border-gray-100 mb-6 md:mb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-7 md:py-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">All Accounts</h2>
+          <p className="text-gray-600 text-xs sm:text-sm mt-1">Manage student and staff accounts</p>
         </div>
       </div>
 
       {/* Table Section */}
-      <div className="max-w-7xl mx-auto px-8">
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-t-4 border-indigo-400">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+        <div className="bg-white rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg overflow-hidden border-t-4 border-indigo-400">
           {accounts.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-6 sm:p-8 text-center text-gray-500">
               <p>No accounts found.</p>
             </div>
           ) : (
@@ -102,23 +102,23 @@ const AdminShowAllAccount = () => {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-gray-200">
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">#</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Name</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Email</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Role</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Actions</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">#</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Name</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Email</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Role</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {accounts.map((account, index) => (
                     <tr key={account._id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200">
-                      <td className="px-6 py-4 text-sm text-gray-700 font-medium">{String(index + 1).padStart(2, "0")}</td>
-                      <td className="px-6 py-4 text-sm">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 font-medium">{String(index + 1).padStart(2, "0")}</td>
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm">
                         <div className="font-semibold text-gray-900">{account.name}</div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{account.email}</td>
-                      <td className="px-6 py-4 text-sm">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-600">{account.email}</td>
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm">
+                        <span className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${
                           account.role === "student" ? "bg-blue-100 text-blue-700" :
                           account.role === "chairman" ? "bg-purple-100 text-purple-700" :
                           account.role === "admin" ? "bg-red-100 text-red-700" :
@@ -127,21 +127,21 @@ const AdminShowAllAccount = () => {
                           {account.role}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm">
-                        <div className="flex gap-2">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm">
+                        <div className="flex gap-1 sm:gap-2">
                           <button
                             onClick={() => handleEdit(account._id)}
-                            className="p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-colors duration-200"
+                            className="p-1.5 sm:p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-colors duration-200"
                             title="Edit"
                           >
-                            <FaRegEdit className="w-4 h-4" />
+                            <FaRegEdit className="w-3 sm:w-4 h-3 sm:h-4" />
                           </button>
                           <button
                             onClick={() => handleDelete(account._id)}
-                            className="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors duration-200"
+                            className="p-1.5 sm:p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors duration-200"
                             title="Delete"
                           >
-                            <FaTrash className="w-4 h-4" />
+                            <FaTrash className="w-3 sm:w-4 h-3 sm:h-4" />
                           </button>
                         </div>
                       </td>

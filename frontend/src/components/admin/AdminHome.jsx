@@ -46,25 +46,25 @@ const AdminHome = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Page Title Section */}
       <div className="bg-amber-50 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-7 md:py-8">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">Admin Dashboard</h2>
-            <p className="text-gray-600 text-sm mt-1">Manage accounts and monitor all grievances</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Admin Dashboard</h2>
+            <p className="text-gray-600 text-xs sm:text-sm mt-1">Manage accounts and monitor all grievances</p>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           
           {/* Left Column - All Grievances */}
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg overflow-hidden border-t-4 border-amber-400 h-[600px] flex flex-col">
-            <div className="bg-gradient-to-r from-amber-50 to-orange-50 px-8 py-6 border-b border-amber-200">
-              <h2 className="text-2xl font-bold text-amber-600">All Grievances</h2>
+          <div className="lg:col-span-2 bg-white rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg overflow-hidden border-t-4 border-amber-400 h-96 sm:h-[500px] md:h-[600px] flex flex-col">
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 border-b border-amber-200">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-amber-600">All Grievances</h2>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 custom-scrollbar">
               {loading && (
                 <div className="h-full flex items-center justify-center">
                   <p className="text-gray-500">Loading...</p>
@@ -84,16 +84,16 @@ const AdminHome = () => {
               )}
 
               {!loading && !error && (
-                <div className="space-y-4">
+                <div className="space-y-2 sm:space-y-3 md:space-y-4">
                   {problems.map((p) => (
                     <div
                       key={p._id}
-                      className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-400 rounded-lg hover:shadow-md transition-all duration-200 hover:border-amber-500"
+                      className="p-2 sm:p-3 md:p-4 bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-400 rounded-lg hover:shadow-md transition-all duration-200 hover:border-amber-500"
                     >
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-bold text-gray-900 flex-1 text-sm">{p.title}</h4>
+                      <div className="flex justify-between items-start gap-2 mb-2">
+                        <h4 className="font-bold text-gray-900 flex-1 text-xs sm:text-sm">{p.title}</h4>
                         <span
-                          className={`badge badge-sm font-semibold text-white text-xs px-3 py-1 ${
+                          className={`badge badge-xs sm:badge-sm font-semibold text-white text-xs px-2 py-1 sm:px-3 sm:py-1 flex-shrink-0 ${
                             p.status === "pending"
                               ? "bg-yellow-500"
                               : p.status === "resolved"
@@ -116,27 +116,27 @@ const AdminHome = () => {
           </div>
 
           {/* Right Column - Admin Actions */}
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-t-4 border-blue-400 h-fit flex flex-col">
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-8 py-6 border-b border-blue-200">
-              <h2 className="text-2xl font-bold text-blue-600">Admin Actions</h2>
+          <div className="bg-white rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg overflow-hidden border-t-4 border-blue-400 h-fit flex flex-col">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 border-b border-blue-200">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">Admin Actions</h2>
             </div>
             
-            <div className="p-8 space-y-4">
+            <div className="p-4 sm:p-6 md:p-8 space-y-3 sm:space-y-4">
               <Link 
                 to="admin-create-account" 
-                className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-200 text-center shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 block"
+                className="w-full px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-200 text-center shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 block text-xs sm:text-sm"
               >
                 Create Student Account
               </Link>
               <Link 
                 to="admin-show-all-account" 
-                className="w-full px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-all duration-200 text-center shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 block"
+                className="w-full px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-all duration-200 text-center shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 block text-xs sm:text-sm"
               >
                 View All Accounts
               </Link>
               <Link 
                 to="admin-create-chairman-account" 
-                className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all duration-200 text-center shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 block"
+                className="w-full px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all duration-200 text-center shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 block text-xs sm:text-sm"
               >
                 Create Chairman Account
               </Link>
