@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaRegEdit } from "react-icons/fa";
-import { MdOutlineDeleteOutline } from "react-icons/md";
+import { FaRegEdit, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import { fetchWithRefresh } from "../../utils/fetchUtil";
 
@@ -17,8 +16,6 @@ const AdminShowAllAccount = () => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            // If your API requires authorization, uncomment below:
-            // "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
           },
         }
       );
@@ -29,8 +26,6 @@ const AdminShowAllAccount = () => {
 
       const { data } = await res.json();
       console.log(data);
-
-      // Assuming your API returns an array in data.users
       setAccounts(data || []);
     } catch (err) {
       console.error(err);
@@ -48,7 +43,7 @@ const AdminShowAllAccount = () => {
       "Are you sure you want to delete this account? This action cannot be undone."
     );
 
-    if (!confirmed) return; // user canceled
+    if (!confirmed) return;
 
     try {
       const res = await fetchWithRefresh(
@@ -57,8 +52,6 @@ const AdminShowAllAccount = () => {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            // If your API requires authorization:
-            // "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
           },
         }
       );
@@ -68,7 +61,6 @@ const AdminShowAllAccount = () => {
       }
 
       alert("Account deleted successfully!");
-      // Optional: remove the deleted account from state so UI updates
       fetchAccounts();
     } catch (err) {
       console.error(err);
@@ -82,48 +74,85 @@ const AdminShowAllAccount = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        Loading...
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen py-20 rounded-2xl">
-      <ul className="list bg-base-100 rounded-box shadow-2xl">
-        <li className="p-10 pb-2 text-2xl opacity-60 tracking-wide">
-          All the students Accounts are given below:
-        </li>
+    <div className="min-h-screen bg-gray-50 py-12">
+      {/* Page Title Section */}
+      <div className="bg-indigo-50 border-b border-gray-100 mb-8">
+        <div className="max-w-7xl mx-auto px-8 py-8">
+          <h2 className="text-3xl font-bold text-gray-900">All Accounts</h2>
+          <p className="text-gray-600 text-sm mt-1">Manage student and staff accounts</p>
+        </div>
+      </div>
 
-        {accounts.map((account, index) => (
-          <li key={account._id} className="list-row">
-            <div className="text-4xl font-thin opacity-40 tabular-nums">
-              {String(index + 1).padStart(2, "0")}
+      {/* Table Section */}
+      <div className="max-w-7xl mx-auto px-8">
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-t-4 border-indigo-400">
+          {accounts.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              <p>No accounts found.</p>
             </div>
-            <div className="list-col-grow">
-              <div>{account.name}</div>
-              <div className="text-xs font-semibold opacity-60">
-                {account.email}
-              </div>
-              <div className="text-xs uppercase font-semibold opacity-60">
-                {account.role}
-              </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-gray-200">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">#</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Name</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Email</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Role</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {accounts.map((account, index) => (
+                    <tr key={account._id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200">
+                      <td className="px-6 py-4 text-sm text-gray-700 font-medium">{String(index + 1).padStart(2, "0")}</td>
+                      <td className="px-6 py-4 text-sm">
+                        <div className="font-semibold text-gray-900">{account.name}</div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{account.email}</td>
+                      <td className="px-6 py-4 text-sm">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                          account.role === "student" ? "bg-blue-100 text-blue-700" :
+                          account.role === "chairman" ? "bg-purple-100 text-purple-700" :
+                          account.role === "admin" ? "bg-red-100 text-red-700" :
+                          "bg-gray-100 text-gray-700"
+                        }`}>
+                          {account.role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(account._id)}
+                            className="p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-colors duration-200"
+                            title="Edit"
+                          >
+                            <FaRegEdit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(account._id)}
+                            className="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors duration-200"
+                            title="Delete"
+                          >
+                            <FaTrash className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <button
-              onClick={() => handleDelete(account._id)}
-              className="btn btn-square btn-ghost"
-            >
-              <MdOutlineDeleteOutline />
-            </button>
-            <button
-              onClick={() => handleEdit(account._id)}
-              className="btn btn-square btn-ghost"
-            >
-              <FaRegEdit />
-            </button>
-          </li>
-        ))}
-      </ul>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

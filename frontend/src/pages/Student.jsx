@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchWithRefresh } from "../utils/fetchUtil.js"; // adjust path
 import { useNavigate } from "react-router";
+import { FaFileAlt, FaPlus, FaClock, FaCheck, FaTimes, FaEye } from "react-icons/fa";
 
 export default function Student() {
   const [user, setUser] = useState(null);
@@ -244,339 +245,355 @@ export default function Student() {
             font-size: 1rem !important;
             transform: none !important;
           }
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f3f4f6;
+            border-radius: 10px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+          }
         `}
       </style>
 
-      <div className="bg-green-200 h-[100vh]">
-        {/* NavBar Section */}
-        <div className="navbar bg-base-100 shadow-sm mb-8">
-          <div className="flex flex-wrap items-center gap-6 w-full px-4">
-            <div className="flex items-center gap-4">
-              <img
-                className="h-20 w-20 rounded-full object-cover border-2 border-blue-200"
-                src="../src/assets/cartoon-illustration-scholar-academic_272293-4645.jpeg"
-                alt="avatar"
-              />
-              <h1 className="my-2 font-semibold text-xl">Student Panel</h1>
+      <div className="min-h-screen bg-gray-50">
+        {/* Professional Header - Modern Gradient */}
+        <header className="bg-gradient-to-r from-slate-700 to-slate-900 border-b border-slate-700 shadow-lg sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-8 py-5">
+            <div className="flex items-center justify-between">
+              {/* Left Section - Logo & Title */}
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-200">
+                  <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 3v2H5v14h14V5h-4V3h6v18H3V3h6z" />
+                  </svg>
+                </div>
+                <div className="border-l border-slate-600 pl-4">
+                  <h1 className="text-xl font-bold text-white tracking-tight">Grievance Management</h1>
+                  <p className="text-sm text-slate-300">Student Portal</p>
+                </div>
+              </div>
+
+              {/* Right Section - User Profile & Logout */}
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-3 px-4 py-2 bg-slate-700 bg-opacity-50 rounded-lg hover:bg-opacity-70 transition-all duration-200">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-md">
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-semibold text-white">Student</span>
+                </div>
+                <button 
+                  className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-200 text-sm shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </div>
             </div>
-            <div className="flex-1 text-center">
-              <h1 className="text-3xl font-bold">Navbar</h1>
+          </div>
+        </header>
+
+        {/* Page Title Section */}
+        <div className="bg-blue-50 border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-8 py-8 flex items-center justify-between">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900">Grievance Dashboard</h2>
+              <p className="text-gray-600 text-sm mt-1">Track and manage your grievances</p>
             </div>
-            <button className="btn btn-neutral" onClick={handleLogout}>
-              Logout
+            <button
+              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
+              onClick={openCreateModal}
+            >
+              <FaPlus className="text-sm" />
+              Submit Grievance
             </button>
           </div>
         </div>
 
-        <div className="m-2 flex justify-between gap-4">
-          {/* ================= LEFT: Public Feed (All Students) ================= */}
-          <div className="">
-            <div className="card bg-base-100 w-[49vw] shadow-sm h-[77vh] p-4 overflow-scroll">
-              <h2 className="text-2xl font-bold text-center">
-                📩 General Message Feed
-              </h2>
-
-              {publicComplains.length === 0 ? (
-                <p className="text-gray-500 text-center mt-10">
-                  No public complains yet.
-                </p>
-              ) : (
-                <div className="flex flex-col gap-4 mt-4">
-                  {publicComplains.map((c) => (
-                    <div
-                      key={c._id}
-                      className="border rounded-lg p-4 shadow hover:shadow-md transition duration-150"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-bold text-lg">{c.title}</h4>
-                        <span
-                          className={`px-2 py-1 text-sm font-semibold rounded-full ${
-                            c.status === "resolved"
-                              ? "bg-green-200 text-green-800"
-                              : c.status === "rejected"
-                              ? "bg-red-200 text-red-800"
-                              : "bg-yellow-200 text-yellow-800"
-                          }`}
-                        >
-                          {c.status}
-                        </span>
-                      </div>
-                      <p className="text-gray-700 mb-2">{c.complain}</p>
-                      <div className="flex justify-between text-sm text-gray-500">
-                        <span className="italic badge badge-ghost">
-                          {c.category}
-                        </span>
-                        <span>
-                          {new Date(c.createdAt).toLocaleString([], {
-                            dateStyle: "short",
-                            timeStyle: "short",
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* ================= RIGHT: My Messages (Public + Private) ================= */}
-          <div className="card bg-base-100 w-[49vw] shadow-sm h-[77vh] p-4 overflow-scroll">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">🔒 My Messages</h2>
-
-              <button
-                className="btn bg-green-500 hover:bg-green-400 text-white font-semibold"
-                onClick={openCreateModal} // Changed to custom handler
-              >
-                <span className="text-2xl">+</span> Create New Problem
-              </button>
-            </div>
-
-            {/* CREATE / EDIT MODAL */}
-            <dialog id="my_modal_3" className="modal">
-              <div className="modal-box">
-                {/* Manual Close Button to ensure state reset */}
-                <button 
-                  onClick={closeModal}
-                  className="btn btn-sm btn-circle btn-ghost absolute right-2 font-extrabold top-2"
-                >
-                  ✕
-                </button>
-                
-                <div>
-                  <h3 className="font-bold text-lg mb-4">
-                    {editingId ? "Edit Problem" : "Create New Problem"}
-                  </h3>
-
-                  <fieldset className="fieldset rounded py-4 mb-2">
-                    <legend className="fieldset-legend text-[14px] font-sans">
-                      Problem Title
-                    </legend>
-                    <input
-                      type="text"
-                      className="input w-full px-3 py-3 border rounded"
-                      placeholder="Enter problem title"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                    />
-                  </fieldset>
-
-                  <fieldset className="fieldset w-full mb-2">
-                    <legend className="fieldset-legend text-[14px]">
-                      Description
-                    </legend>
-                    <textarea
-                      className="input w-full px-3 py-4 rounded resize-none h-40"
-                      placeholder="Describe your problem in detail"
-                      value={complainText}
-                      onChange={(e) => setComplainText(e.target.value)}
-                    />
-                  </fieldset>
-
-                  {/* Hide Visibility Option during Edit */}
-                  {!editingId && (
-                    <>
-                      <legend className="fieldset-legend text-[14px] font-sans mb-2">
-                        Visibility
-                      </legend>
-                      <div className="flex gap-x-6 mb-4">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="viewType"
-                            className="radio radio-success"
-                            checked={viewType === "public"}
-                            onChange={() => setViewType("public")}
-                          />
-                          <span>Public</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="viewType"
-                            className="radio radio-error"
-                            checked={viewType === "private"}
-                            onChange={() => setViewType("private")}
-                          />
-                          <span>Private</span>
-                        </label>
-                      </div>
-                    </>
-                  )}
-
-                  <button
-                    onClick={handleSubmit} // Using unified handler
-                    className="flex items-center justify-center gap-2 bg-green-500 w-full py-2 hover:bg-green-400 rounded-full text-white font-semibold transition duration-150"
-                  >
-                    {editingId ? "Update" : "Send"}
-                  </button>
-                </div>
+        {/* Main Content */}
+        <main className="max-w-7xl mx-auto px-8 py-8">
+          {/* Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            {/* Left Column - Community Feed */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-t-4 border-cyan-400 h-[600px] flex flex-col">
+              <div className="bg-gradient-to-r from-cyan-50 to-blue-50 px-8 py-6 border-b border-cyan-200">
+                <h2 className="text-2xl font-bold text-cyan-600 flex items-center gap-3">
+                  <FaFileAlt className="text-cyan-500" />
+                  Community Feed
+                </h2>
               </div>
-            </dialog>
 
-            {/* MY MESSAGES LIST (Combined) */}
-            <div className="flex flex-col gap-4">
-              {myCombinedComplains.length === 0 ? (
-                <p className="text-gray-500 text-center mt-10">
-                  You haven't posted any messages yet.
-                </p>
-              ) : (
-                myCombinedComplains.map((c) => (
-                  <div
-                    key={c._id}
-                    className="card bg-base-100 border shadow-sm"
-                  >
-                    <div className="card-body">
-                      {/* --- Header Section --- */}
-                      <div className="flex justify-between items-start">
-                        <h2 className="card-title text-lg w-2/3">{c.title}</h2>
-
-                        {/* Right Side Badges Container */}
-                        <div className="flex flex-col items-end gap-2">
-                          
-                          {/* Row 1: Status Badge */}
-                          <span
-                            className={`px-2 py-1 text-sm font-semibold rounded-full ${
-                              c.status === "resolved"
-                                ? "bg-green-200 text-green-800"
-                                : c.status === "rejected"
-                                ? "bg-red-200 text-red-800"
-                                : "bg-yellow-200 text-yellow-800"
-                            }`}
-                          >
+              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                {publicComplains.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-center">
+                    <p className="text-gray-500 text-lg">No public grievances yet.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {publicComplains.map((c) => (
+                      <div
+                        key={c._id}
+                        className="p-4 bg-gradient-to-r from-cyan-50 to-blue-50 border-l-4 border-cyan-400 rounded-lg hover:shadow-md transition-all duration-200 hover:border-cyan-500"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-bold text-gray-900 flex-1 text-sm">{c.title}</h4>
+                          <span className={`badge badge-sm font-semibold text-white text-xs px-3 py-1 ${
+                            c.status === "resolved" ? "bg-emerald-500" :
+                            c.status === "rejected" ? "bg-red-500" :
+                            c.status === "in-progress" ? "bg-blue-500" :
+                            "bg-amber-500"
+                          }`}>
                             {c.status}
                           </span>
-
-                          {/* Row 2: Metadata Tags */}
-                          <div className="flex flex-wrap justify-end gap-1">
-                            {/* Assigned To Tag */}
-                            {c.assignedTo && (
-                              <span className="badge badge-sm h-auto bg-blue-100 text-blue-800 border-blue-200 capitalize">
-                                {c.assignedTo}
-                              </span>
-                            )}
-                             {/* Private/Public Tag */}
-                            <span className={`badge badge-sm font-semibold text-white border-none ${c.view === 'private' ? 'bg-red-400' : 'bg-green-400'}`}>
-                                {c.view === 'private' ? 'Private' : 'Public'}
-                            </span>
-                          </div>
                         </div>
+                        <p className="text-gray-600 text-xs line-clamp-2 mb-2">{c.complain}</p>
+                        <span className="text-gray-400 text-xs">{new Date(c.createdAt).toLocaleDateString()}</span>
                       </div>
-
-                      {/* --- Body --- */}
-                      <p className="text-gray-700 font-sans m-2 line-clamp-2">
-                        {c.complain}
-                      </p>
-
-                      {/* --- Footer / Actions --- */}
-                      <div className="card-actions justify-end items-center gap-2 mt-2">
-                        
-                        {/* EDIT BUTTON (Only if Pending) */}
-                        {c.status === "pending" && (
-                           <button
-                             className="btn text-white font-semibold btn-sm bg-orange-400 hover:bg-orange-300"
-                             onClick={() => openEditModal(c)}
-                           >
-                             Edit
-                           </button>
-                        )}
-
-                        {/* DELETE BUTTON */}
-                        <button
-                          className={`btn text-white font-semibold btn-sm ${
-                            (c.status === 'resolved' || c.status === 'rejected')
-                              ? "bg-blue-500 hover:bg-blue-400"
-                              : "bg-gray-400 hover:bg-gray-400 cursor-not-allowed"
-                          }`}
-                          onClick={() => handleDelete(c._id, c.status)}
-                        >
-                          Delete
-                        </button>
-
-                        {/* VIEW RESPONSE BUTTON */}
-                        {(c.status === "resolved" ||
-                          c.status === "rejected") && (
-                          <button
-                            className="btn btn-sm btn-outline border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-black"
-                            onClick={() => openDetailsModal(c)}
-                          >
-                            View Response
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                ))
-              )}
-            </div>
-
-            {/* SHARED DETAILS MODAL (Read Only) */}
-            <dialog id="details_modal" className="modal">
-              <div className="modal-box">
-                <form method="dialog">
-                  <button className="btn btn-sm btn-circle btn-ghost absolute right-2 text-2xl top-2">
-                    ✕
-                  </button>
-                </form>
-
-                {selectedComplain && (
-                  <>
-                    <div className="flex gap-4 mb-2">
-                      <h2 className="card-title">{selectedComplain.title}</h2>
-                      <span className={`badge font-semibold text-white ${selectedComplain.view === 'private' ? 'bg-red-400' : 'bg-green-400'}`}>
-                        {selectedComplain.view === 'private' ? 'Private' : 'Public'}
-                      </span>
-                    </div>
-
-                    <div className="flex-1">
-                      <p
-                        className={`text-gray-700 font-sans m-1 ${
-                          !expanded ? "line-clamp-2" : ""
-                        }`}
-                      >
-                        {selectedComplain.complain}
-                      </p>
-                      <button
-                        className="text-blue-500 hover:underline m-2 text-sm"
-                        onClick={() => setExpanded(!expanded)}
-                      >
-                        {expanded ? "See less" : "See more"}
-                      </button>
-                    </div>
-
-                    <div className="mt-4">
-                      <div
-                        className={`border p-4 rounded-lg ${
-                          selectedComplain.status === "rejected"
-                            ? "bg-red-50 border-red-300"
-                            : "bg-green-50 border-green-300"
-                        }`}
-                      >
-                        <h4 className="font-semibold text-gray-800 mb-1">
-                          {selectedComplain.status === "rejected"
-                            ? "Rejection Reason"
-                            : "Solution Comment"}
-                        </h4>
-                        <p className="text-gray-700 leading-relaxed">
-                          {selectedComplain.response ||
-                            "No additional comments provided by admin."}
-                        </p>
-                      </div>
-
-                      <p className="text-right text-sm text-gray-600 mt-3">
-                        Updated on:{" "}
-                        {new Date(
-                          selectedComplain.updatedAt
-                        ).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </>
                 )}
               </div>
-            </dialog>
+            </div>
+
+            {/* Right Column - My Grievances */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-t-4 border-cyan-400 h-[600px] flex flex-col">
+              <div className="bg-gradient-to-r from-cyan-50 to-blue-50 px-8 py-6 border-b border-cyan-200 flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-cyan-600 flex items-center gap-3">
+                  <FaFileAlt className="text-cyan-500" />
+                  My Grievances
+                </h2>
+             
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                {myCombinedComplains.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-center">
+                    <p className="text-gray-500 text-lg">You haven't posted any grievances yet.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {myCombinedComplains.map((c) => (
+                      <div
+                        key={c._id}
+                        className="p-4 bg-gradient-to-r from-cyan-50 to-blue-50 border-l-4 rounded-lg hover:shadow-md transition-all duration-200" style={{borderLeftColor: c.status === "resolved" ? "#10b981" : c.status === "rejected" ? "#ef4444" : c.status === "in-progress" ? "#3b82f6" : "#f59e0b"}}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-bold text-gray-900 flex-1 text-sm line-clamp-1">{c.title}</h4>
+                          <span className={`badge badge-sm font-semibold text-white text-xs px-3 py-1 whitespace-nowrap ml-2 ${
+                            c.status === "resolved" ? "bg-emerald-500" :
+                            c.status === "rejected" ? "bg-red-500" :
+                            c.status === "in-progress" ? "bg-blue-500" :
+                            "bg-amber-500"
+                          }`}>
+                            {c.status}
+                          </span>
+                        </div>
+                        <p className="text-gray-600 text-xs line-clamp-2 mb-3">{c.complain}</p>
+
+                        <div className="flex justify-between items-center text-xs text-gray-500 mb-3">
+                          <span>{new Date(c.createdAt).toLocaleDateString()}</span>
+                          <span className={`badge badge-outline badge-xs ${c.view === "private" ? "border-red-400 text-red-600" : "border-emerald-400 text-emerald-600"}`}>
+                            {c.view === "private" ? "Private" : "Public"}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          {c.status === "pending" && (
+                            <button
+                              className="btn btn-xs bg-orange-500 hover:bg-orange-600 text-white border-0 gap-1 font-medium"
+                              onClick={() => openEditModal(c)}
+                            >
+                              Edit
+                            </button>
+                          )}
+                          <button
+                            className={`btn btn-xs border-0 text-white gap-1 font-medium ${
+                              (c.status === "resolved" || c.status === "rejected")
+                                ? "bg-blue-500 hover:bg-blue-600"
+                                : "bg-gray-400 cursor-not-allowed"
+                            }`}
+                            onClick={() => handleDelete(c._id, c.status)}
+                          >
+                            Delete
+                          </button>
+                          {(c.status === "resolved" || c.status === "rejected") && (
+                            <button
+                              className="btn btn-xs bg-cyan-500 hover:bg-cyan-600 text-white border-0 gap-1 ml-auto font-medium"
+                              onClick={() => openDetailsModal(c)}
+                            >
+                              <FaEye className="text-xs" />
+                              Response
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
+        </main>
+
+        {/* CREATE / EDIT MODAL */}
+        <dialog id="my_modal_3" className="modal">
+          <div className="modal-box bg-white rounded-lg shadow-2xl max-w-2xl">
+            <button 
+              onClick={closeModal}
+              className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3 text-gray-600"
+            >
+              ✕
+            </button>
+            
+            <h3 className="font-bold text-2xl mb-6 text-gray-900">
+              {editingId ? "Edit Grievance" : "Submit New Grievance"}
+            </h3>
+
+            <div className="space-y-6">
+              <fieldset className="fieldset border border-gray-300 rounded-lg p-4 bg-gray-50">
+                <legend className="fieldset-legend text-sm font-semibold text-gray-700 px-2">
+                  Grievance Title
+                </legend>
+                <input
+                  type="text"
+                  className="input w-full px-4 py-2 border border-gray-300 rounded-md focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-100 text-gray-900"
+                  placeholder="Enter a clear title for your grievance"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </fieldset>
+
+              <fieldset className="fieldset border border-gray-300 rounded-lg p-4 bg-gray-50">
+                <legend className="fieldset-legend text-sm font-semibold text-gray-700 px-2">
+                  Detailed Description
+                </legend>
+                <textarea
+                  className="input w-full px-4 py-3 border border-gray-300 rounded-md focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-100 resize-none h-40 text-gray-900"
+                  placeholder="Provide detailed information about your grievance..."
+                  value={complainText}
+                  onChange={(e) => setComplainText(e.target.value)}
+                />
+              </fieldset>
+
+              {!editingId && (
+                <fieldset className="fieldset border border-gray-300 rounded-lg p-4 bg-gray-50">
+                  <legend className="fieldset-legend text-sm font-semibold text-gray-700 px-2">
+                    Visibility Setting
+                  </legend>
+                  <div className="flex gap-8 mt-3">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="viewType" className="radio radio-sm border-blue-400  checked:text-blue-500" checked={viewType === "public"}
+                        onChange={() => setViewType("public")}
+                      />
+                      <span className="font-medium text-gray-700">Public (visible to all)</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="viewType"
+                        className="radio radio-sm border-blue-400  checked:text-blue-500" 
+                      checked={viewType === "private"}
+                        onChange={() => setViewType("private")}
+                      />
+                      <span className="font-medium text-gray-700">Private (only visible to admin)</span>
+                    </label>
+                  </div>
+                </fieldset>
+              )}
+
+              <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
+                <button
+                  onClick={closeModal}
+                  className="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium rounded-lg transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 gap-2 flex items-center"
+                >
+                  <FaPlus className="text-sm" />
+                  {editingId ? "Update Grievance" : "Submit Grievance"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </dialog>
+
+        {/* DETAILS MODAL */}
+        <dialog id="details_modal" className="modal">
+          <div className="modal-box bg-white rounded-lg shadow-2xl max-w-3xl">
+            <form method="dialog">
+              <button className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3 text-gray-600">
+                ✕
+              </button>
+            </form>
+
+            {selectedComplain && (
+              <>
+                <h2 className="text-2xl font-bold text-gray-900 mb-3">{selectedComplain.title}</h2>
+                <div className="flex gap-3 mb-6">
+                  <span className={`badge font-semibold text-white text-xs px-3 py-2 ${
+                    selectedComplain.status === "resolved" ? "bg-emerald-600" :
+                    selectedComplain.status === "rejected" ? "bg-red-600" :
+                    "bg-blue-600"
+                  }`}>
+                    {selectedComplain.status}
+                  </span>
+                  <span className={`badge font-semibold text-white border-0 text-xs px-3 py-2 ${selectedComplain.view === "private" ? "bg-red-600" : "bg-emerald-600"}`}>
+                    {selectedComplain.view === "private" ? "Private" : "Public"}
+                  </span>
+                </div>
+
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-700 mb-3">Your Grievance:</h4>
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p className={`text-gray-800 leading-relaxed ${!expanded ? "line-clamp-4" : ""}`}>
+                      {selectedComplain.complain}
+                    </p>
+                    <button
+                      className="text-blue-600 hover:text-blue-700 hover:underline mt-3 text-sm font-medium"
+                      onClick={() => setExpanded(!expanded)}
+                    >
+                      {expanded ? "Show less" : "Show more"}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className={`font-bold text-lg mb-3 ${
+                    selectedComplain.status === "rejected" ? "text-red-700" : "text-emerald-700"
+                  }`}>
+                    {selectedComplain.status === "rejected" ? "Rejection Reason" : "Resolution/Response"}
+                  </h4>
+                  <div className={`p-5 rounded-lg border-l-4 ${
+                    selectedComplain.status === "rejected"
+                      ? "bg-red-50 border-l-red-600"
+                      : "bg-emerald-50 border-l-emerald-600"
+                  }`}>
+                    <p className={selectedComplain.status === "rejected" ? "text-red-900" : "text-emerald-900"}>
+                      {selectedComplain.response || "No additional comments provided."}
+                    </p>
+                  </div>
+                  <p className="text-gray-600 text-sm mt-4">
+                    Last updated: {new Date(selectedComplain.updatedAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        </dialog>
       </div>
     </>
   );
