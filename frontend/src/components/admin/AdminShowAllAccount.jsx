@@ -3,6 +3,7 @@ import { FaRegEdit, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import { fetchWithRefresh } from "../../utils/fetchUtil";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const AdminShowAllAccount = () => {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ const AdminShowAllAccount = () => {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (!res.ok) {
@@ -39,13 +40,9 @@ const AdminShowAllAccount = () => {
     navigate(`/users/${id}`);
   };
 
-  const handleDelete = async (id) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this account? This action cannot be undone."
-    );
-
-    if (!confirmed) return;
-
+ 
+  const handleDelete =  (id) => {
+    async function fetchDel(id) {
     try {
       const res = await fetchWithRefresh(
         `http://localhost:4000/api/v1/admin/user/${id}`,
@@ -54,7 +51,7 @@ const AdminShowAllAccount = () => {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (!res.ok) {
@@ -62,17 +59,37 @@ const AdminShowAllAccount = () => {
       }
 
       // alert("Account deleted successfully!");
-       toast.success("Account deleted successfully!", {
-                        theme: "light",
-                      });
+      toast.success("Account deleted successfully!", {
+        theme: "light",
+      });
       fetchAccounts();
     } catch (err) {
       console.error(err);
-       toast.error("Something went wrong while deleting the account.", {
-                        theme: "light",
-                      });
+      toast.error("Something went wrong while deleting the account.", {
+        theme: "light",
+      });
       // alert("Something went wrong while deleting the account.");
     }
+  }
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: "Deleted!",
+          text: "Account has been deleted.",
+          icon: "success",
+        });
+
+        fetchDel(id); 
+      }
+    });
   };
 
   useEffect(() => {
@@ -92,8 +109,12 @@ const AdminShowAllAccount = () => {
       {/* Page Title Section */}
       <div className="bg-indigo-50 border-b border-gray-100 mb-6 md:mb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-7 md:py-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">All Accounts</h2>
-          <p className="text-gray-600 text-xs sm:text-sm mt-1">Manage student and staff accounts</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            All Accounts
+          </h2>
+          <p className="text-gray-600 text-xs sm:text-sm mt-1">
+            Manage student and staff accounts
+          </p>
         </div>
       </div>
 
@@ -109,28 +130,52 @@ const AdminShowAllAccount = () => {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-gray-200">
-                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">#</th>
-                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Name</th>
-                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Email</th>
-                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Role</th>
-                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">Actions</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">
+                      #
+                    </th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">
+                      Name
+                    </th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">
+                      Email
+                    </th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">
+                      Role
+                    </th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {accounts.map((account, index) => (
-                    <tr key={account._id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200">
-                      <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 font-medium">{String(index + 1).padStart(2, "0")}</td>
-                      <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm">
-                        <div className="font-semibold text-gray-900">{account.name}</div>
+                    <tr
+                      key={account._id}
+                      className="border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200"
+                    >
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 font-medium">
+                        {String(index + 1).padStart(2, "0")}
                       </td>
-                      <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-600">{account.email}</td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm">
-                        <span className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${
-                          account.role === "student" ? "bg-blue-100 text-blue-700" :
-                          account.role === "chairman" ? "bg-purple-100 text-purple-700" :
-                          account.role === "admin" ? "bg-red-100 text-red-700" :
-                          "bg-gray-100 text-gray-700"
-                        }`}>
+                        <div className="font-semibold text-gray-900">
+                          {account.name}
+                        </div>
+                      </td>
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-600">
+                        {account.email}
+                      </td>
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm">
+                        <span
+                          className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${
+                            account.role === "student"
+                              ? "bg-blue-100 text-blue-700"
+                              : account.role === "chairman"
+                                ? "bg-purple-100 text-purple-700"
+                                : account.role === "admin"
+                                  ? "bg-red-100 text-red-700"
+                                  : "bg-gray-100 text-gray-700"
+                          }`}
+                        >
                           {account.role}
                         </span>
                       </td>

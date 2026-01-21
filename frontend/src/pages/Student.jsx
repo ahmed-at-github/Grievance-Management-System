@@ -10,6 +10,7 @@ import {
   FaEye,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 export default function Student() {
   const [user, setUser] = useState(null);
@@ -64,7 +65,7 @@ export default function Student() {
   };
 
   // ===== Delete Function =====
-  const handleDelete = async (id, status) => {
+  const handleDelete = (id, status) => {
     if (status !== "resolved" && status !== "rejected") {
       // alert("You can only delete complaints that are resolved or rejected.");
       toast.warning(
@@ -76,36 +77,58 @@ export default function Student() {
       return;
     }
 
-    if (!window.confirm("Are you sure you want to delete this complaint?"))
-      return;
+      async function fetchDel() {
+        try {
+          const res = await fetchWithRefresh(
+            `http://localhost:4000/api/v1/complain/${id}`,
+            { method: "DELETE" },
+          );
 
-    try {
-      const res = await fetchWithRefresh(
-        `http://localhost:4000/api/v1/complain/${id}`,
-        { method: "DELETE" },
-      );
+          const response = await res.json();
 
-      const response = await res.json();
-
-      if (res.ok) {
-        // alert("Complaint deleted successfully");
-        toast.success("Account deleted successfully!", {
-          theme: "light",
-        });
-        await refreshAllData();
-      } else {
-        // alert(response.message || "Failed to delete complaint");
-        toast.error(response.message || "Failed to delete complaint", {
-          theme: "light",
-        });
+          if (res.ok) {
+            // alert("Complaint deleted successfully");
+            toast.success("Account deleted successfully!", {
+              theme: "light",
+            });
+            await refreshAllData();
+          } else {
+            // alert(response.message || "Failed to delete complaint");
+            toast.error(response.message || "Failed to delete complaint", {
+              theme: "light",
+            });
+          }
+        } catch (err) {
+          console.error("Error deleting complaint:", err);
+          // alert("Failed to delete complaint");
+          toast.error("Failed to delete complaint", {
+            theme: "light",
+          });
+        }
       }
-    } catch (err) {
-      console.error("Error deleting complaint:", err);
-      // alert("Failed to delete complaint");
-      toast.error("Failed to delete complaint", {
-        theme: "light",
-      });
-    }
+      
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+    
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: "Deleted!",
+          text: "Your file has been deleted.",
+          icon: "success",
+        });
+        fetchDel();
+      }
+    });
+
+    // if (!window.confirm("Are you sure you want to delete this complaint?"))
+    //   return;
   };
 
   // ===== Data Loading Logic =====
@@ -118,7 +141,7 @@ export default function Student() {
         const res = await fetchWithRefresh("http://localhost:4000/api/v1/me");
         const response = await res.json();
         console.log(response.data);
-        
+
         if (response.success) {
           setUser(response.data);
         }
