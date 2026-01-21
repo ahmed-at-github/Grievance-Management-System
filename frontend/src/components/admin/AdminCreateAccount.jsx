@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { fetchWithRefresh } from "../../utils/fetchUtil";
+import { toast } from "react-toastify";
 
 const AdminCreateAccount = () => {
   const [formData, setFormData] = useState({
@@ -18,6 +19,7 @@ const AdminCreateAccount = () => {
   const handleChange = (e) => {
     setFormData({
       ...formData,
+      role: "student",
       [e.target.name]: e.target.value,
     });
   };
@@ -38,10 +40,13 @@ const AdminCreateAccount = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(formData),
-        }
+        },
       );
 
       if (res.ok) {
+        toast.success("Account created successfully!", {
+          theme: "light",
+        });
         setMessage("Account created successfully!");
         setFormData({
           name: "",
@@ -54,6 +59,9 @@ const AdminCreateAccount = () => {
           role: "",
         });
       } else {
+        toast.error("Account creation unsuccessfull!", {
+          theme: "light",
+        });
         setError("Failed to create account. Please try again.");
       }
     } catch (err) {
@@ -67,8 +75,12 @@ const AdminCreateAccount = () => {
       {/* Page Title Section */}
       <div className="bg-blue-50 border-b border-gray-100 mb-6 md:mb-8">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-7 md:py-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Create Student Account</h2>
-          <p className="text-gray-600 text-xs sm:text-sm mt-1">Add a new student to the system</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Create Student Account
+          </h2>
+          <p className="text-gray-600 text-xs sm:text-sm mt-1">
+            Add a new student to the system
+          </p>
         </div>
       </div>
 
@@ -91,7 +103,9 @@ const AdminCreateAccount = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                Full Name *
+              </label>
               <input
                 type="text"
                 name="name"
@@ -104,7 +118,9 @@ const AdminCreateAccount = () => {
             </div>
 
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">Email *</label>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                Email *
+              </label>
               <input
                 type="email"
                 name="email"
@@ -117,7 +133,9 @@ const AdminCreateAccount = () => {
             </div>
 
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">Student ID *</label>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                Student ID *
+              </label>
               <input
                 type="text"
                 name="studId"
@@ -130,19 +148,9 @@ const AdminCreateAccount = () => {
             </div>
 
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">Password</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter password (optional)"
-                className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-100 text-gray-900 text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">Department *</label>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                Department *
+              </label>
               <input
                 type="text"
                 name="dept"
@@ -155,7 +163,9 @@ const AdminCreateAccount = () => {
             </div>
 
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">Section *</label>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                Section *
+              </label>
               <input
                 type="text"
                 name="section"
@@ -168,26 +178,15 @@ const AdminCreateAccount = () => {
             </div>
 
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">Session *</label>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                Session *
+              </label>
               <input
                 type="text"
                 name="session"
                 value={formData.session}
                 onChange={handleChange}
                 placeholder="2023-2024"
-                required
-                className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-100 text-gray-900 text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">Role *</label>
-              <input
-                type="text"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                placeholder="student"
                 required
                 className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-100 text-gray-900 text-sm"
               />

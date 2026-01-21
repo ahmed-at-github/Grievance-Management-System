@@ -1,10 +1,12 @@
-import { useParams } from "react-router-dom";
+import { useParams } from "react-router";
 import { useEffect, useState } from "react";
 import { fetchWithRefresh } from "../utils/fetchUtil.js";
 import AdminNabar from "../components/admin/AdminNavbar.jsx"
 
 const UsersInfo = () => {
   const { id } = useParams(); // get the dynamic user ID from the URL
+  console.log(id);
+  
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 

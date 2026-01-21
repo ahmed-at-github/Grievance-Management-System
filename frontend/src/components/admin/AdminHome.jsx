@@ -138,7 +138,7 @@ const AdminHome = () => {
                 to="admin-create-chairman-account" 
                 className="w-full px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all duration-200 text-center shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 block text-xs sm:text-sm"
               >
-                Create Chairman Account
+                Create Manegerial Account
               </Link>
             </div>
           </div>

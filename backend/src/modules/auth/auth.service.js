@@ -30,9 +30,7 @@ export const authService = {
         }
 
         if (body.role === 'chairman' || body.role === 'decision committee') {
-            const roleExists = await User.findOne({
-                $or: [{ role: 'chairman' }, { role: 'decision committee' }],
-            });
+            const roleExists = await User.findOne({ role: body.role });
 
             if (roleExists) {
                 const err = new Error(
@@ -45,8 +43,7 @@ export const authService = {
 
         const customPassword = generatePass();
         await sendMail(body.email, customPassword);
-        
-        
+
         const hashPass = await hashPassword(customPassword);
         body.password = hashPass;
 

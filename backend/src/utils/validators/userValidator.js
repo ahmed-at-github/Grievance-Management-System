@@ -4,7 +4,7 @@ export const UserValidator = Joi.object({
     name: Joi.string().trim().min(2).max(50).required(),
     email: Joi.string().email().required(),
     password: Joi.string().allow('').required(),
-    role: Joi.string().valid('student', 'chairman', 'dean', 'admin').required(),
+    role: Joi.string().valid('student', 'chairman', 'decision committee', 'admin').required(),
     studId: Joi.string().trim(),
     session: Joi.string().trim(),
     dept: Joi.string().trim(),

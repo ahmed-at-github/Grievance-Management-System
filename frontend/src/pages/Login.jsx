@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { FaGavel, FaEye, FaEyeSlash } from "react-icons/fa";
+import { Bounce, toast } from "react-toastify";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -54,16 +55,32 @@ const Login = () => {
 
       //Check role
       if (meData.data.role === "admin") {
+        toast.success("Login Successful", {
+          theme: "light",
+        });
         navigate("/admin"); // redirect admin to admin page
       } else if (meData.data.role === "student") {
+        toast.success("Login Successful", {
+          theme: "light",
+        });
+
         navigate("/student");
       } else if (meData.data.role === "chairman") {
+        toast.success("Login Successful", {
+          theme: "light",
+        });
         navigate("/chairman");
-      }else if (meData.data.role === "decision committee") {
+      } else if (meData.data.role === "decision committee") {
+        toast.success("Login Successful", {
+          theme: "light",
+        });
         navigate("/decision");
       }
     } catch (err) {
       console.error(err);
+       toast.error("Login Unsuccessful", {
+          theme: "light",
+        });
       setMessage("Something went wrong. Try again.");
     }
   };
@@ -77,7 +94,6 @@ const Login = () => {
       <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md">
         {/* Main Container - Glassmorphism */}
         <div className="backdrop-blur-xl bg-white/30 rounded-2xl sm:rounded-3xl shadow-2xl border border-white/40 p-6 sm:p-8 md:p-10">
-          
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8 md:mb-10">
             <div className="inline-block p-3 sm:p-4 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg sm:rounded-2xl shadow-lg mb-4 sm:mb-6 transform hover:scale-110 transition-transform duration-300">
@@ -86,14 +102,21 @@ const Login = () => {
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-1 sm:mb-2">
               Grievance Portal
             </h1>
-            <p className="text-gray-600 text-xs sm:text-sm md:text-sm">Secure access to your grievance management system</p>
+            <p className="text-gray-600 text-xs sm:text-sm md:text-sm">
+              Secure access to your grievance management system
+            </p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 md:space-y-6">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 sm:space-y-5 md:space-y-6"
+          >
             {/* Email Field */}
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">Email Address</label>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
+                Email Address
+              </label>
               <input
                 type="email"
                 className="w-full px-4 sm:px-5 py-2.5 sm:py-3 bg-white/50 border-2 border-cyan-200/50 rounded-lg sm:rounded-xl placeholder-gray-400 text-gray-900 text-sm sm:text-base focus:outline-none focus:border-cyan-400 focus:bg-white/80 transition-all duration-200 backdrop-blur-sm"
@@ -106,7 +129,9 @@ const Login = () => {
 
             {/* Password Field */}
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">Password</label>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
+                Password
+              </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -121,7 +146,11 @@ const Login = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 transition-colors"
                 >
-                  {showPassword ? <FaEyeSlash className="text-sm sm:text-base" /> : <FaEye className="text-sm sm:text-base" />}
+                  {showPassword ? (
+                    <FaEyeSlash className="text-sm sm:text-base" />
+                  ) : (
+                    <FaEye className="text-sm sm:text-base" />
+                  )}
                 </button>
               </div>
             </div>

@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router";
+import { toast } from "react-toastify";
 
 const AdminNavbar = () => {
   const navigate = useNavigate();
@@ -13,6 +14,9 @@ const AdminNavbar = () => {
     console.log(msg);
 
     localStorage.removeItem("accessToken");
+     toast.success("Logout Successful", {
+              theme: "light",
+            });
     navigate("/");
   };
   return (

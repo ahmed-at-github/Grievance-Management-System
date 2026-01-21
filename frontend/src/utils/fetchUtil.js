@@ -3,6 +3,8 @@ const refreshAccessToken = async () => {
     method: "GET",
     credentials: "include", // send refresh token cookie
   });
+  // console.log(res);
+  
   if (!res.ok) throw new Error("Unable to refresh token");
   const data = await res.json();
 

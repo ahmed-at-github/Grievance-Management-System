@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FaRegEdit, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import { fetchWithRefresh } from "../../utils/fetchUtil";
+import { toast } from "react-toastify";
 
 const AdminShowAllAccount = () => {
   const navigate = useNavigate();
@@ -60,11 +61,17 @@ const AdminShowAllAccount = () => {
         throw new Error("Failed to delete account");
       }
 
-      alert("Account deleted successfully!");
+      // alert("Account deleted successfully!");
+       toast.success("Account deleted successfully!", {
+                        theme: "light",
+                      });
       fetchAccounts();
     } catch (err) {
       console.error(err);
-      alert("Something went wrong while deleting the account.");
+       toast.error("Something went wrong while deleting the account.", {
+                        theme: "light",
+                      });
+      // alert("Something went wrong while deleting the account.");
     }
   };
 
