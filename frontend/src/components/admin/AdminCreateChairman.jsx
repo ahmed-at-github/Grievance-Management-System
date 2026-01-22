@@ -1,32 +1,29 @@
 import React, { useState } from "react";
 import { fetchWithRefresh } from "../../utils/fetchUtil.js";
+import { toast } from "react-toastify";
 
 const AdminCreateChairman = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("");
 
-  const [message, setMessage] = useState(""); // Success or error
-  const [error, setError] = useState(""); // Validation errors
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async () => {
-    // Clear previous messages
     setMessage("");
     setError("");
 
-    // --- Client-side validation ---
-    if (!name.trim() || !email.trim()) {
-      setError("Name and Email are required.");
+    if (!name.trim() || !email.trim() || !role) {
+      setError("Name, Email, and Role are required.");
       return;
     }
-
-   
 
     const payload = {
       name: name.trim(),
       email: email.trim(),
-      role: "chairman",
-      password: "", // optional password
+      role: role,
+      password: "",
     };
 
     try {
@@ -36,56 +33,123 @@ const AdminCreateChairman = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        }
+        },
       );
 
       const data = await response.json();
 
       if (response.ok) {
-        setMessage("Chairman account created successfully!");
+         toast.success("Account created successfully!", {
+                          theme: "light",
+                        });
+        setMessage("Account created successfully!");
         setName("");
         setEmail("");
-        setPassword("");
+        setRole("");
       } else {
-        // Server error message
         setError(data.message || data.error || "Something went wrong!");
       }
     } catch (err) {
+       toast.error("Account creation unsuccessfully!", {
+                        theme: "light",
+                      });
       console.error(err);
       setError("Server error. Please try again.");
     }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white rounded-2xl shadow-2xl p-10 flex flex-col gap-5 w-[400px]">
-        <h2 className="text-xl font-bold text-center mb-4">Create Chairman</h2>
+    <div className="min-h-screen bg-gray-50 py-6 sm:py-8 md:py-12">
+      {/* Page Title */}
+      <div className="bg-purple-50 border-b border-gray-100 mb-6 md:mb-8">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 md:px-8 py-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Create Managerial Account
+          </h2>
+          <p className="text-gray-600 text-xs sm:text-sm mt-1">
+            Add a new account to the system
+          </p>
+        </div>
+      </div>
 
-        {/* Error / validation message */}
-        {error && <p className="text-red-500 text-center">{error}</p>}
-        {message && <p className="text-green-600 text-center">{message}</p>}
+      {/* Form */}
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 md:px-8">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+          className="bg-white rounded-xl shadow-lg p-6 border-t-4 border-purple-400 space-y-5"
+        >
+          {message && (
+            <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg text-sm">
+              ✓ {message}
+            </div>
+          )}
 
-        <label className="label">Name</label>
-        <input
-          type="text"
-          className="input input-bordered w-full"
-          placeholder="Full Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+              ✕ {error}
+            </div>
+          )}
 
-        <label className="label">Email</label>
-        <input
-          type="email"
-          className="input input-bordered w-full"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+          {/* Full Name */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Full Name *
+            </label>
+            <input
+              type="text"
+              placeholder="Dr. John Smith"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-purple-600 focus:ring-2 focus:ring-purple-100"
+              required
+            />
+          </div>
 
-        <button className="btn btn-neutral mt-4" onClick={handleSubmit}>
-          Create
-        </button>
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Email *
+            </label>
+            <input
+              type="email"
+              placeholder="accnt@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-purple-600 focus:ring-2 focus:ring-purple-100"
+              required
+            />
+          </div>
+
+          {/* Role Dropdown */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Role *
+            </label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-sm"
+              required
+            >
+              <option value="">Select role</option>
+              <option value="chairman">Chairman</option>
+              <option value="decision committee">Decision Committee</option>
+            </select>
+          </div>
+
+          {/* Submit Button */}
+          <div className="pt-4 border-t border-gray-200">
+            <button
+              type="submit"
+              className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all shadow-lg hover:shadow-xl"
+            >
+              Create Account
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

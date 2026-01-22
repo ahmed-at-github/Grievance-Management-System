@@ -13,7 +13,7 @@ const ErrorPage = () => {
           Oops, page not found!
         </h2>
         <p className="text-[#001931] text-lg">
-          {error.status} — The page you are looking for is not available.
+          {error?.status} — The page you are looking for is not available.
         </p>
         <Link
           to="/"

@@ -49,7 +49,7 @@ export const handleLogin = async (req, res, next) => {
             .cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 sameSite: 'Lax',
-                secure: false,
+                secure: true,
                 maxAge: 24 * 60 * 60 * 1000,
             })
             .json({ success: true, accessToken: accessToken });
@@ -63,7 +63,10 @@ export const getRefreshToken = async (req, res, next) => {
         const { id, role } = req.user;
         const data = { id, role };
 
-        const { accessToken, refreshToken } = authService.generateToken(data);
+        console.log(data);
+        
+
+        const { accessToken, refreshToken } = await authService.generateToken(data);
 
         console.log(accessToken, refreshToken);
 

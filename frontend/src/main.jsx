@@ -3,7 +3,6 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router";
-// import Login from './pages/Login.jsx'
 import Admin from "./pages/Admin.jsx";
 import AdminHome from "./components/admin/AdminHome.jsx";
 import AdminCreateAccount from "./components/admin/AdminCreateAccount.jsx";
@@ -18,12 +17,13 @@ import ChairmanHome from "./components/chairman/ChairmanHome.jsx";
 import ChairmanProfile from "./components/chairman/ChairmanProfile.jsx";
 import ErrorPage from "./pages/ErrorPage.jsx";
 import Decision from "./pages/Decision.jsx";
+import { Bounce, ToastContainer } from "react-toastify";
 
 const router = createBrowserRouter([
   {
     path: "/",
     Component: Login,
-    errorElement: <ErrorPage></ErrorPage> 
+    errorElement: <ErrorPage></ErrorPage>,
   },
   {
     path: "/users/:id",
@@ -31,7 +31,7 @@ const router = createBrowserRouter([
   },
 
   {
-    path: "/admin",
+    path: "/admin", // check admin role and loggedIn if not redirect
     Component: Admin,
     children: [
       { index: true, Component: AdminHome },
@@ -43,10 +43,10 @@ const router = createBrowserRouter([
   },
   {
     path: "/student",
-    Component: Student,
+    element: <Student />,
   },
 
-{
+  {
     path: "/decision",
     Component: Decision,
   },
@@ -55,17 +55,30 @@ const router = createBrowserRouter([
     path: "/chairman",
     Component: Chairman,
     children: [
-      {index:true, Component: ChairmanHome},
+      { index: true, Component: ChairmanHome },
       {
         path: "profile",
-        Component: ChairmanProfile
-      }
-    ]
+        Component: ChairmanProfile,
+      },
+    ],
   },
 ]);
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <RouterProvider router={router}></RouterProvider>
-  </StrictMode>
+
+    <ToastContainer
+      position="top-center"
+      autoClose={1000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick={false}
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+      theme="light"
+    />
+  </StrictMode>,
 );

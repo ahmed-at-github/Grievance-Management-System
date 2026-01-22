@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { fetchWithRefresh } from "../utils/fetchUtil.js"; // Adjust path if needed
+import { useEffect, useState } from "react";
+import { fetchWithRefresh } from "../utils/fetchUtil.js";
 import { useNavigate } from "react-router";
+import { FaFileAlt, FaClock, FaCheck, FaTimes, FaEye } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 export default function Decision() {
   const navigate = useNavigate();
@@ -14,21 +16,21 @@ export default function Decision() {
   const [selectedComplain, setSelectedComplain] = useState(null);
   const [responseText, setResponseText] = useState("");
   const [forwardRole, setForwardRole] = useState("");
-  const [expanded, setExpanded] = useState(false); // For text inside modal
+  const [expanded, setExpanded] = useState(false);
 
-  // 1. Initialization Effect (Fetch User -> Then Fetch Complains)
+  // Initialization Effect (Fetch User -> Then Fetch Complains)
   useEffect(() => {
     const initData = async () => {
       try {
         // A. Fetch Current User first
         const userRes = await fetchWithRefresh(
-          "http://localhost:4000/api/v1/me"
+          "http://localhost:4000/api/v1/me",
         );
         const userJson = await userRes.json();
 
         let currentUserId = null;
         if (userJson.success) {
-          setUser(userJson.data); // Adjust based on whether backend sends 'data' or 'user'
+          setUser(userJson.data);
           currentUserId = userJson.data._id;
         }
 
@@ -42,57 +44,59 @@ export default function Decision() {
     initData();
   }, []);
 
-  // 2. Unified Load Function (Public + Private Merge)
-const loadComplains = async (userId) => {
-  setLoading(true);
-  try {
-    // Step 1: Fetch Public Complains
-    const publicRes = await fetchWithRefresh(
-      "http://localhost:4000/api/v1/complain/"
-    );
-    const publicJson = await publicRes.json();
+  // Unified Load Function (Public + Private Merge)
+  const loadComplains = async (userId) => {
+    setLoading(true);
+    try {
+      // Step 1: Fetch Public Complains
+      const publicRes = await fetchWithRefresh(
+        "http://localhost:4000/api/v1/complain/",
+      );
+      const publicJson = await publicRes.json();
 
-    // ✅ FILTER: only chairman public complains
-    let combinedData = (publicJson.data || []).filter(
-      (c) => c.assignedTo === "decision committee"
-    );
+      // FILTER: only decision committee public complains
+      let combinedData = (publicJson.data || []).filter(
+        (c) => c.assignedTo === "decision committee",
+      );
 
-    // Step 2: Fetch Private Complains (Only if we have a User ID)
-    if (userId) {
-      try {
-        const privateRes = await fetchWithRefresh(
-          `http://localhost:4000/api/v1/complain/${userId}`
-        );
-        const privateJson = await privateRes.json();
-        const privateData = privateJson.data || [];
+      // Step 2: Fetch Private Complains (Only if we have a User ID)
+      if (userId) {
+        try {
+          const privateRes = await fetchWithRefresh(
+            `http://localhost:4000/api/v1/complain/${userId}`,
+          );
+          const privateJson = await privateRes.json();
+          const privateData = privateJson.data || [];
 
-        // Merge arrays
-        combinedData = [...combinedData, ...privateData];
-      } catch (privateErr) {
-        console.error("Failed to fetch private complains", privateErr);
+          // Merge arrays
+          combinedData = [...combinedData, ...privateData];
+        } catch (privateErr) {
+          console.error("Failed to fetch private complains", privateErr);
+        }
       }
+
+      const sorted = combinedData.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+      );
+
+      setComplains(sorted);
+    } catch (err) {
+      console.error("Failed to fetch complains", err);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setComplains(combinedData);
-  } catch (err) {
-    console.error("Failed to fetch complains", err);
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-  // 3. Handle Updates (Solve, Reject, Forward)
+  // Handle Updates (Solve, Reject, Forward)
   const handleUpdateStatus = async (newStatus) => {
     if (!selectedComplain) return;
 
     const roleToAssign = forwardRole || (user ? user.role : undefined);
 
-    // 2. Construct body using spread syntax
     const body = {
       status: newStatus,
-      ...(responseText && { response: responseText }), // Only adds 'response' key if responseText exists
-      ...(roleToAssign && { assignedTo: roleToAssign }), // Only adds 'assignedTo' key if a role exists
+      ...(responseText && { response: responseText }),
+      ...(roleToAssign && { assignedTo: roleToAssign }),
     };
 
     try {
@@ -101,33 +105,42 @@ const loadComplains = async (userId) => {
       const res = await fetchWithRefresh(
         `http://localhost:4000/api/v1/complain/${selectedComplain._id}`,
         {
-          method: "PATCH", // Changed from PUT to PATCH as per standard, ensure backend matches
+          method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
-        }
+        },
       );
 
       const response = await res.json();
       if (res.ok) {
-        alert(`Complaint ${newStatus} successfully!`);
+        // alert(`Complaint ${newStatus} successfully!`);
+        toast.success(`Complaint ${newStatus} successfully!`, {
+          theme: "light",
+        });
 
         // Close Modals
-        document.getElementById("my_modal_3").close();
-        document.getElementById("my_modal_4").close();
-        document.getElementById("my_modal_5").close();
+        document.getElementById("forward_modal").close();
+        document.getElementById("resolve_modal").close();
+        document.getElementById("reject_modal").close();
 
         // Reset State
         setResponseText("");
         setForwardRole("");
 
-        // Refresh list (pass user._id if available to keep private data visible)
+        // Refresh list
         loadComplains(user ? user._id : null);
       } else {
-        alert(response.message || "Failed to update complaint");
+        // alert(response.message || "Failed to update complaint");
+        toast.error(response.message || "Failed to update complaint", {
+          theme: "light",
+        });
       }
     } catch (err) {
       console.error("Update failed:", err);
-      alert("Something went wrong");
+      // alert("Something went wrong");
+       toast.error("Something went wrong", {
+              theme: "light",
+            });
     }
   };
 
@@ -135,12 +148,16 @@ const loadComplains = async (userId) => {
     try {
       await fetch("http://localhost:4000/api/v1/logout", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
       });
       localStorage.removeItem("accessToken");
+      toast.success("Logout Successful", {
+        theme: "light",
+      });
       navigate("/");
     } catch (error) {
-      console.error(error);
+      console.log(error);
     }
   };
 
@@ -148,8 +165,15 @@ const loadComplains = async (userId) => {
   const openModal = (modalId, complain) => {
     setSelectedComplain(complain);
     setResponseText("");
+    setForwardRole("");
     setExpanded(false);
     document.getElementById(modalId).showModal();
+  };
+
+  const openDetailsModal = (complain) => {
+    setSelectedComplain(complain);
+    setExpanded(false);
+    document.getElementById("details_modal").showModal();
   };
 
   // Filter Data for Columns
@@ -158,386 +182,622 @@ const loadComplains = async (userId) => {
     (c) =>
       c.status === "resolved" ||
       c.status === "rejected" ||
-      c.status === "approved"
+      c.status === "approved",
   );
 
   return (
-    <div className="bg-green-200 h-[100vh]">
-      {/* NavBar Section */}
-      <div className="flex flex-wrap items-center gap-6">
-        <div className="navbar bg-base-100 shadow-sm">
-          <div className="flex items-center gap-4">
-            <img
-              className="h-20 w-20 rounded-full object-cover border-2 border-blue-200"
-              src="../src/assets/committee.jpg"
-              alt="logo"
-            />
-            <h1 className="my-2 font-semibold text-xl">
-              Decision Committee Panel
-            </h1>
-            <button className="btn btn-neutral" onClick={handleLogout}>
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
+    <>
+      <style>
+        {`
+          .fieldset:focus-within .fieldset-legend {
+            font-size: 1rem !important;
+            transform: none !important;
+          }
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f3f4f6;
+            border-radius: 10px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+          }
+        `}
+      </style>
 
-      <div className="flex gap-4 justify-between">
-        {/* ================= LEFT: New Messages (Pending) ================= */}
-        <div className="m-2">
-          <div className="card bg-base-100 w-[49vw] shadow-sm h-[77vh] p-2 overflow-scroll">
-            <div className="card-body">
-              <h1 className="text-center font-semibold mb-2 font-sans text-2xl">
-                🔔 New Messages
-              </h1>
-
-              {loading ? (
-                <p className="text-center">Loading...</p>
-              ) : pendingComplains.length === 0 ? (
-                <p className="text-center text-gray-500">
-                  No pending messages.
-                </p>
-              ) : (
-                pendingComplains.map((c) => (
-                  <div
-                    key={c._id}
-                    className="card hover:bg-base-200 bg-base-100 w-[45vw] shadow-sm border mb-4"
+      <div className="min-h-screen bg-gray-50">
+        {/* Professional Header - Modern Gradient */}
+        <header className="bg-gradient-to-r from-slate-700 to-slate-900 border-b border-slate-700 shadow-lg sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-5">
+            <div className="flex items-center justify-between gap-2 sm:gap-4">
+              {/* Left Section - Logo & Title */}
+              <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-200 flex-shrink-0">
+                  <svg
+                    className="w-5 h-5 sm:w-7 sm:h-7 text-white"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    <div className="card-body">
-                      {/* --- Header: Title and Badge --- */}
-                      <div className="flex gap-4 justify-between items-start">
-                        <h2 className="card-title text-lg">{c.title}</h2>
-                        <span
-                          className={`badge font-semibold text-white shrink-0 ${
-                            c.view === "private" ? "bg-red-400" : "bg-green-400"
-                          }`}
-                        >
-                          {c.view === "private" ? "Private" : "Public"}
-                        </span>
-                      </div>
-
-                      {/* --- Complaint Text --- */}
-                      <p className="text-gray-700 font-sans m-2 line-clamp-2">
-                        {c.complain}
-                      </p>
-
-                      {/* --- NEW: Student Details Section --- */}
-                      {c.studentId && (
-                        <div className="bg-gray-50 p-2 rounded-md border border-gray-100 text-xs text-gray-600 mt-1 mb-2 font-mono">
-                          <div className="flex justify-between">
-                            <span className="font-bold text-gray-800">
-                              {c.studentId.name}
-                            </span>
-                            <span>ID: {c.studentId.studId}</span>
-                          </div>
-                          <div className="flex justify-between mt-1">
-                            <span>
-                              Dept: {c.studentId.dept} (Sec:{" "}
-                              {c.studentId.section})
-                            </span>
-                            <span>Session: {c.studentId.session}</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* --- Action Buttons --- */}
-                      <div className="card-actions justify-end mt-2">
-                        <button
-                          className="btn btn-sm bg-cyan-600 hover:bg-cyan-500 text-white"
-                          onClick={() => openModal("my_modal_3", c)}
-                        >
-                          Forward
-                        </button>
-
-                        <button
-                          className="btn btn-sm bg-green-600 hover:bg-green-500 text-white"
-                          onClick={() => openModal("my_modal_4", c)}
-                        >
-                          Solution
-                        </button>
-
-                        <button
-                          className="btn btn-sm bg-red-600 hover:bg-red-500 text-white"
-                          onClick={() => openModal("my_modal_5", c)}
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* ================= RIGHT: Solved Messages (Resolved/Rejected) ================= */}
-        <div className="m-2">
-          <div className="card bg-base-100 w-[47vw] shadow-sm p-2 h-[77vh] overflow-scroll">
-            <div className="card-body">
-              <h1 className="text-center font-semibold mb-2 font-sans text-2xl">
-                ✅ Solved Messages
-              </h1>
-
-              {solvedComplains.length === 0 ? (
-                <p className="text-center text-gray-500">
-                  No solved history yet.
-                </p>
-              ) : (
-                solvedComplains.map((c) => (
-                  <div
-                    key={c._id}
-                    className="card bg-base-100 w-[43vw] shadow-sm border mb-4"
-                  >
-                    <div className="card-body">
-                      <div className="flex gap-4">
-                        <h2 className="card-title">{c.title}</h2>
-                        {/* VIEW TAG */}
-                        <span
-                          className={`badge font-semibold text-white ${
-                            c.view === "private" ? "bg-red-400" : "bg-green-400"
-                          }`}
-                        >
-                          {c.view}
-                        </span>
-                      </div>
-
-                      <p className="text-gray-700 font-sans m-2 line-clamp-2">
-                        {c.complain}
-                      </p>
-
-                      {/* --- NEW: Student Details Section --- */}
-                      {c.studentId && (
-                        <div className="bg-gray-50 p-2 rounded-md border border-gray-100 text-xs text-gray-600 mt-1 mb-2 font-mono">
-                          <div className="flex justify-between">
-                            <span className="font-bold text-gray-800">
-                              {c.studentId.name}
-                            </span>
-                            <span>ID: {c.studentId.studId}</span>
-                          </div>
-                          <div className="flex justify-between mt-1">
-                            <span>
-                              Dept: {c.studentId.dept} (Sec:{" "}
-                              {c.studentId.section})
-                            </span>
-                            <span>Session: {c.studentId.session}</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {c.response && (
-                        <div className="bg-gray-100 p-2 rounded mt-2 text-sm">
-                          <strong>Decision:</strong> {c.response}
-                        </div>
-                      )}
-                      <div className="card-actions justify-end">
-                        {c.status === "resolved" && (
-                          <span className="badge bg-green-500 p-3 text-white">
-                            Solved
-                          </span>
-                        )}
-                        {c.status === "rejected" && (
-                          <span className="badge bg-red-500 p-3 text-white">
-                            Rejected
-                          </span>
-                        )}
-                        {c.status === "approved" && (
-                          <span className="badge bg-cyan-500 p-3 text-white">
-                            Forwarded
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ================= MODALS SECTION ================= */}
-
-      {/* MODAL 3: FORWARD */}
-      <dialog id="my_modal_3" className="modal">
-        <div className="modal-box">
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 text-2xl top-2">
-              ✕
-            </button>
-          </form>
-
-          {selectedComplain && (
-            <>
-              <div className="flex gap-4">
-                <h2 className="card-title">{selectedComplain.title}</h2>
-                <span
-                  className={`badge font-semibold text-white ${
-                    selectedComplain.view === "private"
-                      ? "bg-red-400"
-                      : "bg-green-400"
-                  }`}
-                >
-                  {selectedComplain.view}
-                </span>
+                    <path d="M9 3v2H5v14h14V5h-4V3h6v18H3V3h6z" />
+                  </svg>
+                </div>
+                <div className="border-l border-slate-600 pl-2 sm:pl-4 min-w-0">
+                  <h1 className="text-base sm:text-lg md:text-xl font-bold text-white tracking-tight truncate">
+                    Grievance Management
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-300 hidden sm:block">
+                    Decision Committee Portal
+                  </p>
+                </div>
               </div>
 
-              <div className="flex-1 my-2">
-                <p
-                  className={`text-gray-700 font-sans m-1 ${
-                    !expanded ? "line-clamp-2" : ""
-                  }`}
-                >
-                  {selectedComplain.complain}
-                </p>
+              {/* Right Section - User Profile & Logout */}
+              <div className="flex items-center gap-2 sm:gap-4 md:gap-6 flex-shrink-0">
+                {/* Profile Section - Visible on SM and up */}
+                <div className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-700 bg-opacity-50 rounded-lg hover:bg-opacity-70 transition-all duration-200">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md flex-shrink-0">
+                    <svg
+                      className="w-5 h-5 sm:w-6 sm:h-6 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                  </div>
+                  <span className="text-xs sm:text-sm font-semibold text-white">
+                    Decision Committee
+                  </span>
+                </div>
+                {/* User Icon - Visible only on Mobile */}
+                <div className="sm:hidden w-8 h-8 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
+                </div>
                 <button
-                  className="text-blue-500 hover:underline m-2 text-sm"
-                  onClick={() => setExpanded(!expanded)}
+                  className="px-3 sm:px-6 py-1.5 sm:py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-200 text-xs sm:text-sm shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+                  onClick={handleLogout}
                 >
-                  {expanded ? "See less" : "See more"}
+                  Logout
                 </button>
               </div>
+            </div>
+          </div>
+        </header>
 
-              <div className="m-4">
-                <label
-                  htmlFor="role"
-                  className="block mb-1 font-medium text-gray-700"
-                >
-                  Assign To:
-                </label>
+        {/* Page Title Section */}
+        <div className="bg-indigo-50 border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-8">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                Decision Panel
+              </h2>
+              <p className="text-gray-600 text-xs sm:text-sm mt-1">
+                Review and manage pending grievances
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-8">
+          {/* Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+            {/* Left Column - Pending Grievances */}
+            <div className="bg-white rounded-lg sm:rounded-2xl shadow-lg overflow-hidden border-t-4 border-amber-400 h-96 sm:h-[600px] flex flex-col">
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 px-4 sm:px-8 py-4 sm:py-6 border-b border-amber-200">
+                <h2 className="text-lg sm:text-2xl font-bold text-amber-600 flex items-center gap-2 sm:gap-3">
+                  <FaClock className="text-amber-500 text-sm sm:text-base" />
+                  Pending Grievances
+                </h2>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-4 sm:p-8 custom-scrollbar">
+                {loading ? (
+                  <div className="h-full flex items-center justify-center">
+                    <p className="text-gray-500">Loading...</p>
+                  </div>
+                ) : pendingComplains.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-center">
+                    <p className="text-gray-500 text-lg">
+                      No pending grievances.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {pendingComplains.map((c) => (
+                      <div
+                        key={c._id}
+                        className="p-3 sm:p-4 bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-400 rounded-lg hover:shadow-md transition-all duration-200 hover:border-amber-500"
+                      >
+                        <div className="flex justify-between items-start mb-2 gap-2">
+                          <h4 className="font-bold text-gray-900 flex-1 text-xs sm:text-sm line-clamp-2">
+                            {c.title}
+                          </h4>
+                          <span
+                            className={`badge badge-sm font-semibold text-white text-xs px-2 sm:px-3 py-1 whitespace-nowrap flex-shrink-0 ${
+                              c.view === "private"
+                                ? "bg-red-500"
+                                : "bg-emerald-500"
+                            }`}
+                          >
+                            {c.view === "private" ? "Private" : "Public"}
+                          </span>
+                        </div>
+                        <p className="text-gray-600 text-xs line-clamp-2 mb-3">
+                          {c.complain}
+                        </p>
+
+                        {/* Student Details */}
+                        {c.studentId && (
+                          <div className="bg-gray-100 p-2 sm:p-3 rounded-md border border-gray-200 text-xs text-gray-700 mb-3">
+                            <div className="flex justify-between mb-1 flex-wrap gap-1">
+                              <span className="font-semibold text-xs">
+                                {c.studentId.name}
+                              </span>
+                              <span className="text-xs">
+                                ID: {c.studentId.studId}
+                              </span>
+                            </div>
+                            <div className="flex justify-between flex-wrap gap-1 text-xs">
+                              <span>
+                                Dept: {c.studentId.dept} (Sec:{" "}
+                                {c.studentId.section})
+                              </span>
+                              <span>Session: {c.studentId.session}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        <span className="text-gray-400 text-xs">
+                          {new Date(c.createdAt).toLocaleDateString()}
+                        </span>
+
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          <button
+                            className="btn btn-xs bg-blue-500 hover:bg-blue-600 text-white border-0 gap-1 font-medium text-xs px-2 py-1"
+                            onClick={() => openModal("forward_modal", c)}
+                          >
+                            Forward
+                          </button>
+                          <button
+                            className="btn btn-xs bg-emerald-500 hover:bg-emerald-600 text-white border-0 gap-1 font-medium text-xs px-2 py-1"
+                            onClick={() => openModal("resolve_modal", c)}
+                          >
+                            <FaCheck className="text-xs" />
+                            Resolve
+                          </button>
+                          <button
+                            className="btn btn-xs bg-red-500 hover:bg-red-600 text-white border-0 gap-1 font-medium text-xs px-2 py-1"
+                            onClick={() => openModal("reject_modal", c)}
+                          >
+                            <FaTimes className="text-xs" />
+                            Reject
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Right Column - Decision History */}
+            <div className="bg-white rounded-lg sm:rounded-2xl shadow-lg overflow-hidden border-t-4 border-cyan-400 h-96 sm:h-[600px] flex flex-col">
+              <div className="bg-gradient-to-r from-cyan-50 to-blue-50 px-4 sm:px-8 py-4 sm:py-6 border-b border-cyan-200 flex justify-between items-center">
+                <h2 className="text-lg sm:text-2xl font-bold text-cyan-600 flex items-center gap-2 sm:gap-3">
+                  <FaFileAlt className="text-cyan-500 text-sm sm:text-base" />
+                  Decision History
+                </h2>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-4 sm:p-8 custom-scrollbar">
+                {solvedComplains.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-center">
+                    <p className="text-gray-500 text-lg">
+                      No decision history yet.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {solvedComplains.map((c) => (
+                      <div
+                        key={c._id}
+                        className="p-3 sm:p-4 bg-gradient-to-r from-cyan-50 to-blue-50 border-l-4 rounded-lg hover:shadow-md transition-all duration-200"
+                        style={{
+                          borderLeftColor:
+                            c.status === "resolved"
+                              ? "#10b981"
+                              : c.status === "rejected"
+                                ? "#ef4444"
+                                : "#06b6d4",
+                        }}
+                      >
+                        <div className="flex justify-between items-start mb-2 gap-2">
+                          <h4 className="font-bold text-gray-900 flex-1 text-xs sm:text-sm line-clamp-1">
+                            {c.title}
+                          </h4>
+                          <span
+                            className={`badge badge-sm font-semibold text-white text-xs px-2 sm:px-3 py-1 whitespace-nowrap flex-shrink-0 ${
+                              c.status === "resolved"
+                                ? "bg-emerald-500"
+                                : c.status === "rejected"
+                                  ? "bg-red-500"
+                                  : "bg-cyan-500"
+                            }`}
+                          >
+                            {c.status === "approved" ? "Forwarded" : c.status}
+                          </span>
+                        </div>
+                        <p className="text-gray-600 text-xs line-clamp-2 mb-3">
+                          {c.complain}
+                        </p>
+
+                        {/* Student Details */}
+                        {c.studentId && (
+                          <div className="bg-gray-100 p-2 rounded-md border border-gray-200 text-xs text-gray-700 mb-2">
+                            <span className="font-semibold text-xs">
+                              {c.studentId.name}
+                            </span>{" "}
+                            - ID: {c.studentId.studId}
+                          </div>
+                        )}
+
+                        <div className="flex justify-between items-center text-xs text-gray-500 mb-3">
+                          <span>
+                            {new Date(c.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+
+                        <button
+                          className="btn btn-xs bg-cyan-500 hover:bg-cyan-600 text-white border-0 gap-1 font-medium text-xs px-2 py-1"
+                          onClick={() => openDetailsModal(c)}
+                        >
+                          <FaEye className="text-xs" />
+                          View Decision
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </main>
+
+        {/* FORWARD MODAL */}
+        <dialog id="forward_modal" className="modal">
+          <div className="modal-box bg-white rounded-lg sm:rounded-lg shadow-2xl max-w-xs sm:max-w-md md:max-w-2xl p-4 sm:p-6 md:p-8">
+            <button
+              onClick={() => {
+                document.getElementById("forward_modal").close();
+                setResponseText("");
+                setForwardRole("");
+              }}
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 sm:right-3 top-2 sm:top-3 text-gray-600"
+            >
+              ✕
+            </button>
+
+            <h3 className="font-bold text-lg sm:text-2xl mb-4 sm:mb-6 text-gray-900">
+              Forward Grievance
+            </h3>
+
+            <div className="space-y-4 sm:space-y-6">
+              {selectedComplain && (
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+                  <h4 className="font-semibold text-gray-700 mb-2 text-sm sm:text-base">
+                    {selectedComplain.title}
+                  </h4>
+                  <p className="text-gray-600 text-xs sm:text-sm">
+                    {selectedComplain.complain}
+                  </p>
+                </div>
+              )}
+
+              <fieldset className="fieldset border border-gray-300 rounded-lg p-3 sm:p-4 bg-gray-50">
+                <legend className="fieldset-legend text-xs sm:text-sm font-semibold text-gray-700 px-2">
+                  Assign To
+                </legend>
                 <select
-                  id="role"
-                  className="w-full p-3 border border-gray-300 rounded-lg"
+                  className="select w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-md focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-100 text-gray-900 text-sm"
                   value={forwardRole}
                   onChange={(e) => setForwardRole(e.target.value)}
                 >
                   <option value="">-- Select Role --</option>
                   <option value="chairman">Chairman</option>
-                  <option value="deen">Deen</option>
-                  <option value="vc">VC</option>
                 </select>
-              </div>
+              </fieldset>
 
-              <button
-                onClick={() => handleUpdateStatus("pending")}
-                className="flex items-center justify-center gap-2 bg-cyan-600 w-full py-2 hover:bg-cyan-500 rounded-full text-white font-semibold"
-              >
-                Forward Complaint
-              </button>
-            </>
-          )}
-        </div>
-      </dialog>
-
-      {/* MODAL 4: SOLUTION */}
-      <dialog id="my_modal_4" className="modal">
-        <div className="modal-box">
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 text-2xl top-2">
-              ✕
-            </button>
-          </form>
-
-          {selectedComplain && (
-            <>
-              <div className="flex gap-4">
-                <h2 className="card-title">{selectedComplain.title}</h2>
-              </div>
-
-              <div className="flex-1 my-2">
-                <p
-                  className={`text-gray-700 font-sans m-1 ${
-                    !expanded ? "line-clamp-2" : ""
-                  }`}
-                >
-                  {selectedComplain.complain}
-                </p>
+              <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end pt-3 sm:pt-4 border-t border-gray-200">
                 <button
-                  className="text-blue-500 hover:underline m-2 text-sm"
-                  onClick={() => setExpanded(!expanded)}
+                  onClick={() => {
+                    document.getElementById("forward_modal").close();
+                    setResponseText("");
+                    setForwardRole("");
+                  }}
+                  className="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium rounded-lg transition-colors duration-200"
                 >
-                  {expanded ? "See less" : "See more"}
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleUpdateStatus("pending")}
+                  disabled={!forwardRole.trim()}
+                  className="px-4 sm:px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 gap-2 flex items-center text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Forward Grievance
                 </button>
               </div>
+            </div>
+          </div>
+        </dialog>
 
-              <fieldset className="fieldset rounded py-4 mb-2">
-                <legend className="fieldset-legend text-[14px] font-sans">
-                  Solution Comment
+        {/* RESOLVE MODAL */}
+        <dialog id="resolve_modal" className="modal">
+          <div className="modal-box bg-white rounded-lg sm:rounded-lg shadow-2xl max-w-xs sm:max-w-md md:max-w-2xl p-4 sm:p-6 md:p-8">
+            <button
+              onClick={() => {
+                document.getElementById("resolve_modal").close();
+                setResponseText("");
+              }}
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 sm:right-3 top-2 sm:top-3 text-gray-600"
+            >
+              ✕
+            </button>
+
+            <h3 className="font-bold text-lg sm:text-2xl mb-4 sm:mb-6 text-gray-900">
+              Resolve Grievance
+            </h3>
+
+            <div className="space-y-4 sm:space-y-6">
+              {selectedComplain && (
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+                  <h4 className="font-semibold text-gray-700 mb-2 text-sm sm:text-base">
+                    {selectedComplain.title}
+                  </h4>
+                  <p className="text-gray-600 text-xs sm:text-sm">
+                    {selectedComplain.complain}
+                  </p>
+                </div>
+              )}
+
+              <fieldset className="fieldset border border-gray-300 rounded-lg p-3 sm:p-4 bg-gray-50">
+                <legend className="fieldset-legend text-xs sm:text-sm font-semibold text-gray-700 px-2">
+                  Resolution/Decision
                 </legend>
                 <textarea
-                  className="textarea textarea-bordered w-full"
-                  placeholder="Write the resolution here..."
+                  className="input w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-md focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100 resize-none h-24 sm:h-32 md:h-40 text-gray-900 text-sm"
+                  placeholder="Provide your resolution or decision for this grievance..."
                   value={responseText}
                   onChange={(e) => setResponseText(e.target.value)}
                 />
               </fieldset>
 
-              <button
-                onClick={() => handleUpdateStatus("resolved")}
-                className="flex items-center justify-center gap-2 bg-green-500 w-full py-2 hover:bg-green-400 rounded-full text-white font-semibold"
-              >
-                Mark as Solved
-              </button>
-            </>
-          )}
-        </div>
-      </dialog>
-
-      {/* MODAL 5: REJECT */}
-      <dialog id="my_modal_5" className="modal">
-        <div className="modal-box">
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 text-2xl top-2">
-              ✕
-            </button>
-          </form>
-
-          {selectedComplain && (
-            <>
-              <div className="flex gap-4">
-                <h2 className="card-title text-red-600">
-                  {selectedComplain.title}
-                </h2>
-              </div>
-
-              <div className="flex-1 my-2">
-                <p
-                  className={`text-gray-700 font-sans m-1 ${
-                    !expanded ? "line-clamp-2" : ""
-                  }`}
-                >
-                  {selectedComplain.complain}
-                </p>
+              <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end pt-3 sm:pt-4 border-t border-gray-200">
                 <button
-                  className="text-blue-500 hover:underline m-2 text-sm"
-                  onClick={() => setExpanded(!expanded)}
+                  onClick={() => {
+                    document.getElementById("resolve_modal").close();
+                    setResponseText("");
+                  }}
+                  className="px-4 sm:px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium rounded-lg transition-colors duration-200 text-sm"
                 >
-                  {expanded ? "See less" : "See more"}
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleUpdateStatus("resolved")}
+                  disabled={!responseText.trim()}
+                  className="px-4 sm:px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors duration-200 gap-2 flex items-center justify-center text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <FaCheck className="text-sm" />
+                  Mark as Resolved
                 </button>
               </div>
+            </div>
+          </div>
+        </dialog>
 
-              <fieldset className="fieldset rounded py-4 mb-2">
-                <legend className="fieldset-legend text-[14px] font-sans">
+        {/* REJECT MODAL */}
+        <dialog id="reject_modal" className="modal">
+          <div className="modal-box bg-white rounded-lg sm:rounded-lg shadow-2xl max-w-xs sm:max-w-md md:max-w-2xl p-4 sm:p-6 md:p-8">
+            <button
+              onClick={() => {
+                document.getElementById("reject_modal").close();
+                setResponseText("");
+              }}
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 sm:right-3 top-2 sm:top-3 text-gray-600"
+            >
+              ✕
+            </button>
+
+            <h3 className="font-bold text-lg sm:text-2xl mb-4 sm:mb-6 text-gray-900">
+              Reject Grievance
+            </h3>
+
+            <div className="space-y-4 sm:space-y-6">
+              {selectedComplain && (
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+                  <h4 className="font-semibold text-gray-700 mb-2 text-sm sm:text-base">
+                    {selectedComplain.title}
+                  </h4>
+                  <p className="text-gray-600 text-xs sm:text-sm">
+                    {selectedComplain.complain}
+                  </p>
+                </div>
+              )}
+
+              <fieldset className="fieldset border border-gray-300 rounded-lg p-3 sm:p-4 bg-gray-50">
+                <legend className="fieldset-legend text-xs sm:text-sm font-semibold text-gray-700 px-2">
                   Rejection Reason
                 </legend>
                 <textarea
-                  className="textarea textarea-bordered w-full"
-                  placeholder="Why is this being rejected?"
+                  className="input w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-md focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-100 resize-none h-24 sm:h-32 md:h-40 text-gray-900 text-sm"
+                  placeholder="Provide the reason for rejecting this grievance..."
                   value={responseText}
                   onChange={(e) => setResponseText(e.target.value)}
                 />
               </fieldset>
 
-              <button
-                onClick={() => handleUpdateStatus("rejected")}
-                className="flex items-center justify-center gap-2 bg-red-600 w-full py-2 hover:bg-red-500 rounded-full text-white font-semibold"
-              >
-                Confirm Rejection
+              <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end pt-3 sm:pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => {
+                    document.getElementById("reject_modal").close();
+                    setResponseText("");
+                  }}
+                  className="px-4 sm:px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium rounded-lg transition-colors duration-200 text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleUpdateStatus("rejected")}
+                  disabled={!responseText.trim()}
+                  className="px-4 sm:px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200 gap-2 flex items-center justify-center text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <FaTimes className="text-sm" />
+                  Confirm Rejection
+                </button>
+              </div>
+            </div>
+          </div>
+        </dialog>
+
+        {/* DETAILS MODAL */}
+        <dialog id="details_modal" className="modal">
+          <div className="modal-box bg-white rounded-lg sm:rounded-lg shadow-2xl max-w-xs sm:max-w-md md:max-w-3xl p-4 sm:p-6 md:p-8">
+            <form method="dialog">
+              <button className="btn btn-sm btn-circle btn-ghost absolute right-2 sm:right-3 top-2 sm:top-3 text-gray-600">
+                ✕
               </button>
-            </>
-          )}
-        </div>
-      </dialog>
-    </div>
+            </form>
+
+            {selectedComplain && (
+              <>
+                <h2 className="text-lg sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
+                  {selectedComplain.title}
+                </h2>
+                <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
+                  <span
+                    className={`badge font-semibold text-white text-xs px-2 sm:px-3 py-1 sm:py-2 ${
+                      selectedComplain.status === "resolved"
+                        ? "bg-emerald-600"
+                        : selectedComplain.status === "rejected"
+                          ? "bg-red-600"
+                          : "bg-cyan-600"
+                    }`}
+                  >
+                    {selectedComplain.status === "approved"
+                      ? "Forwarded"
+                      : selectedComplain.status}
+                  </span>
+                  <span
+                    className={`badge font-semibold text-white border-0 text-xs px-2 sm:px-3 py-1 sm:py-2 ${selectedComplain.view === "private" ? "bg-red-600" : "bg-emerald-600"}`}
+                  >
+                    {selectedComplain.view === "private" ? "Private" : "Public"}
+                  </span>
+                </div>
+
+                <div className="mb-4 sm:mb-6">
+                  <h4 className="font-semibold text-gray-700 mb-2 sm:mb-3 text-sm sm:text-base">
+                    Grievance Details:
+                  </h4>
+                  <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+                    <p
+                      className={`text-gray-800 leading-relaxed text-xs sm:text-sm ${!expanded ? "line-clamp-4" : ""}`}
+                    >
+                      {selectedComplain.complain}
+                    </p>
+                    <button
+                      className="text-blue-600 hover:text-blue-700 hover:underline mt-3 text-xs sm:text-sm font-medium"
+                      onClick={() => setExpanded(!expanded)}
+                    >
+                      {expanded ? "Show less" : "Show more"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Student Details */}
+                {selectedComplain.studentId && (
+                  <div className="mb-4 sm:mb-6">
+                    <h4 className="font-semibold text-gray-700 mb-2 sm:mb-3 text-sm sm:text-base">
+                      Student Information:
+                    </h4>
+                    <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200 text-xs sm:text-sm text-gray-700 space-y-2">
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
+                        <span>
+                          <strong>Name:</strong>{" "}
+                          {selectedComplain.studentId.name}
+                        </span>
+                        <span>
+                          <strong>ID:</strong>{" "}
+                          {selectedComplain.studentId.studId}
+                        </span>
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
+                        <span>
+                          <strong>Dept:</strong>{" "}
+                          {selectedComplain.studentId.dept}
+                        </span>
+                        <span>
+                          <strong>Section:</strong>{" "}
+                          {selectedComplain.studentId.section}
+                        </span>
+                        <span>
+                          <strong>Session:</strong>{" "}
+                          {selectedComplain.studentId.session}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <h4
+                    className={`font-bold text-base sm:text-lg mb-2 sm:mb-3 ${
+                      selectedComplain.status === "rejected"
+                        ? "text-red-700"
+                        : "text-emerald-700"
+                    }`}
+                  >
+                    {selectedComplain.status === "rejected"
+                      ? "Rejection Reason"
+                      : "Decision/Resolution"}
+                  </h4>
+                  <div
+                    className={`p-3 sm:p-5 rounded-lg border-l-4 text-xs sm:text-sm ${
+                      selectedComplain.status === "rejected"
+                        ? "bg-red-50 border-l-red-600"
+                        : "bg-emerald-50 border-l-emerald-600"
+                    }`}
+                  >
+                    <p
+                      className={
+                        selectedComplain.status === "rejected"
+                          ? "text-red-900"
+                          : "text-emerald-900"
+                      }
+                    >
+                      {selectedComplain.response ||
+                        "No additional comments provided."}
+                    </p>
+                  </div>
+                  <p className="text-gray-600 text-xs sm:text-sm mt-3 sm:mt-4">
+                    Last updated:{" "}
+                    {new Date(selectedComplain.updatedAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        </dialog>
+      </div>
+    </>
   );
 }
